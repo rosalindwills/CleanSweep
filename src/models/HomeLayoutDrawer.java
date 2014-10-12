@@ -59,6 +59,11 @@ class HomeLayoutPanel extends JPanel {
         			
         			g2d.setColor(Color.black);
         			g2d.draw(rect);
+        			
+        			if(cell.getIsChargingStation())
+        			{
+        				g2d.drawOval(x * xMult, y * yMult, xMult, yMult);
+        			}
         		}
         	}
         }
@@ -93,8 +98,7 @@ class HomeLayoutPanel extends JPanel {
     	
     	r *= Math.pow(0.9, dirtUnits);
     	g *= Math.pow(0.9, dirtUnits);
-    	b *= Math.pow(0.9, dirtUnits);
-    	
+    	b *= Math.pow(0.9, dirtUnits);    	
 
     	Color color = new Color(r, g, b, 1.0f);    	
     	return color;
