@@ -5,11 +5,15 @@ import interfaces.ICell;
 import java.io.File;
 import java.io.IOException;
 
+import log.Log;
+import log.LogFactory;
+
 import org.xml.sax.SAXException;
 
 public class Vacuum implements Runnable {
 	private SensorSimulator sim;
 	public volatile boolean on;
+	Log log = LogFactory.newFileLog();
 	
 	private int x, y;
 	private int dirtUnits;
@@ -33,6 +37,8 @@ public class Vacuum implements Runnable {
 		
 		thread = new Thread(this);
 		thread.start();
+		
+		log.append("Started the vacuum");		
 	}
 	
 	public void Stop()
@@ -44,6 +50,8 @@ public class Vacuum implements Runnable {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
+		log.append("Stopped the vacuum");
 	}
 	
 	public void run()
@@ -64,7 +72,7 @@ public class Vacuum implements Runnable {
 		// right now it only sweeps and doesn't move, so if the current space is clean it is finished
 		if(sim.readCell(1, x, y).getDirtUnits() <= 0)
 		{
-			System.out.println("Finished Cleaning");
+			log.append("Finished Cleaning");
 			Stop();
 		}
 	}
@@ -76,7 +84,7 @@ public class Vacuum implements Runnable {
 			cell.cleanCell();
 			++dirtUnits;
 
-			System.out.println("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
+			log.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
 			
 			CheckIfFinishedCleaning();
 		}
