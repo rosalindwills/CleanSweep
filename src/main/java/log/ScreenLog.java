@@ -9,23 +9,40 @@ class ScreenLog implements Log{
 	
 	private int lenOfHorizontalLine = 30;
 	
-	@Override
 	public void append(String logline) {
 		System.out.println(logline);
 	}
 
-	@Override
 	public void newline() {
 		System.out.println();
 		
 	}
 
-	@Override
 	public void horizontalLine() {
 		for(int i = 0; i < this.lenOfHorizontalLine; i++){
 			System.out.print("-");
 		}
 		System.out.println();
+	}
+
+	public void clear() {
+		try
+	    {
+	        final String os = System.getProperty("os.name");
+
+	        if (os.contains("Windows"))
+	        {
+	            Runtime.getRuntime().exec("cls");
+	        }
+	        else
+	        {
+	            Runtime.getRuntime().exec("clear");
+	        }
+	    }
+	    catch (final Exception e)
+	    {
+	        e.printStackTrace();
+	    }
 	}
 
 }

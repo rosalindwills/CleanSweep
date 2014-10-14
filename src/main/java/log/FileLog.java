@@ -1,8 +1,10 @@
 package log;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 
 /** This class for recording logging into a file.
@@ -11,9 +13,9 @@ import java.io.IOException;
 * @author Jerry Liu
 * @version 1.0 Oct 9, 2014.
 */
-class FileLog implements Log{
+class FileLog implements Log {
 	
-	private String logPathString = "log" + File.separator + "log";
+	private String logPathString = "src"+ File.separator + "main"+ File.separator + "log" + File.separator +"log";
 	BufferedWriter output;
 	
 	private int lenOfHorizontalLine = 30;
@@ -41,8 +43,6 @@ class FileLog implements Log{
 		}
 	}
 	
-	
-	@Override
 	public void append(String logline) {
 		try {
 			output = new BufferedWriter(new FileWriter(logPathString, true));
@@ -54,7 +54,6 @@ class FileLog implements Log{
 		}
 	}
 
-	@Override
 	public void newline() {
 		try {
 			output = new BufferedWriter(new FileWriter(logPathString, true));
@@ -66,7 +65,6 @@ class FileLog implements Log{
 		
 	}
 
-	@Override
 	public void horizontalLine() {
 		try {
 			output = new BufferedWriter(new FileWriter(logPathString, true));
@@ -78,6 +76,18 @@ class FileLog implements Log{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void clear() {
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(new File(logPathString));
+			writer.print("");
+			writer.close();	
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+			
 	}
 
 }

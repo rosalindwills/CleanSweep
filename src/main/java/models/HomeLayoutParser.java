@@ -3,10 +3,8 @@ package models;
 import interfaces.ICell;
 import interfaces.IFloor;
 import interfaces.IHomeLayout;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
-
 import enums.PathType;
 import enums.SurfaceType;
 
