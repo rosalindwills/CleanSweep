@@ -78,12 +78,12 @@ public class Vacuum implements Runnable {
         }
 
 
-        private Boolean moveRight(){
+        private ICell moveRight(){
             return sim.readCell(1,x+1,y);
         }
 
 
-        private Boolean moveLeft(){
+        private ICell moveLeft(){
             return sim.readCell(1,x-1,y);
         }
 	
