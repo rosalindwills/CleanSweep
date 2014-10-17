@@ -3,20 +3,31 @@ package models;
 import interfaces.ICell;
 import interfaces.IDetect;
 import interfaces.IHomeLayout;
-import interfaces.ISensorSimulator;
+import interfaces.ISensor;
 import java.io.FileReader;
 import java.io.IOException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
+import java.io.File;
 
 import enums.PathType;
 
-public class SensorSimulator implements ISensorSimulator, IDetect {
+public class SensorSimulator implements ISensor, IDetect {
+ 
+       static final public String HOME_LAYOUT_FILE = "src"+ File.separator + "main"+ File.separator + "resources" + File.separator +"homeLayout1.xml";
 
 	private IHomeLayout _homeLayout;
-	
+
+        static public ISensor getInstance(){
+            return new SensorSimulator(); 
+        }
+
+        private SensorSimulator(){
+
+        }
+       
 	public IHomeLayout getHomeLayout() {
 		return _homeLayout;
 	}
