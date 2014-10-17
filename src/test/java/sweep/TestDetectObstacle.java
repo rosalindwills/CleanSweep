@@ -1,9 +1,11 @@
-package models;
+package sweep;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.junit.Assert;
+import models.SensorSimulator;
+
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -22,7 +24,7 @@ public class TestDetectObstacle {
 	
 	public TestDetectObstacle(){
 		try {
-			sim.importXml("src"+ File.separator + "sampleXml"+ File.separator + "homeLayout1.xml");
+			sim.importXml("src"+ File.separator + "main"+ File.separator + "resources" + File.separator +"homeLayout1.xml");
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

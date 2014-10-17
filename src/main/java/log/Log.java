@@ -21,6 +21,10 @@ public interface Log {
 	 */
 	public void horizontalLine();
 	
+	/**
+	 * Delete previous log
+	 */
+	public void clear();
 	
-
+	
 }

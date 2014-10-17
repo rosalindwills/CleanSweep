@@ -1,10 +1,12 @@
-package models;
+package sweep;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Assert;
+import models.SensorSimulator;
+import models.Vacuum;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -16,7 +18,7 @@ public class TestVacuum {
 	public TestVacuum(){
 		try 
 		{
-			sim.importXml("src"+ File.separator + "sampleXml"+ File.separator + "homeLayout1.xml");
+			sim.importXml("src"+ File.separator + "main"+ File.separator + "resources" + File.separator +"homeLayout1.xml");
 		} 
 		catch (SAXException e) 
 		{

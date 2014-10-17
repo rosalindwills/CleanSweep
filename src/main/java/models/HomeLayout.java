@@ -3,7 +3,6 @@ package models;
 import interfaces.ICell;
 import interfaces.IFloor;
 import interfaces.IHomeLayout;
-
 import java.util.ArrayList;
 import java.util.List;
 

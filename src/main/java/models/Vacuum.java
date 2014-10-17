@@ -1,14 +1,8 @@
 package models;
 
 import interfaces.ICell;
-
-import java.io.File;
-import java.io.IOException;
-
 import log.Log;
 import log.LogFactory;
-
-import org.xml.sax.SAXException;
 
 public class Vacuum implements Runnable {
 	private SensorSimulator sim;

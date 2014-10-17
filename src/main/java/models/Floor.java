@@ -2,7 +2,6 @@ package models;
 
 import interfaces.ICell;
 import interfaces.IFloor;
-
 import java.util.ArrayList;
 import java.util.List;
 
