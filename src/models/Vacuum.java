@@ -58,7 +58,7 @@ public class Vacuum implements Runnable {
 	{
 		while(on)
 		{
-			ICell currentCell = sim.readCell(1, x, y);
+			ICell currentCell = move(); 
 			
 			if(currentCell.getDirtUnits() > 0)
 			{
@@ -66,6 +66,32 @@ public class Vacuum implements Runnable {
 			}
 		}
 	}
+
+        private ICell move(){
+
+            //add navigation logic  
+            return moveForward(); 
+        }
+
+
+        private ICell moveForward(){
+	    return sim.readCell(1, x, y+1);
+        }
+
+
+        private ICell moveBackward(){
+            return sim.readCell(1,x,y-1); 
+        }
+
+
+        private Boolean moveRight(){
+            return sim.readCell(1,x+1,y);
+        }
+
+
+        private Boolean moveLeft(){
+            return sim.readCell(1,x-1,y);
+        }
 	
 	private void CheckIfFinishedCleaning()
 	{		
