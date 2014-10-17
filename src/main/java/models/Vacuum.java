@@ -1,11 +1,12 @@
 package models;
 
 import interfaces.ICell;
+import interfaces.ISensor;
 import log.Log;
 import log.LogFactory;
 
 public class Vacuum implements Runnable {
-	private SensorSimulator sim;
+	private ISensor sim;
 	public volatile boolean on;
 	Log log = LogFactory.newFileLog();
 	
@@ -15,8 +16,12 @@ public class Vacuum implements Runnable {
 	
 	// the thread the vacuum is running in
 	Thread thread;
+
+        static public Vacuum getInstance(ISensor sensor,int xPos, int yPos){ 
+              return new Vacuum(sensor,xPos,yPos);
+        }
 	
-	public Vacuum(SensorSimulator sensorSimulator, int xPosition, int yPosition)
+	private Vacuum(ISensor sensorSimulator, int xPosition, int yPosition)
 	{
 		x = xPosition;
 		y = yPosition;
