@@ -2,12 +2,18 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>CleanSweep</groupId>
+  <groupId>com.se459</groupId>
   <artifactId>CleanSweep</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>CleanSweep</name>
+
+  <modules>
+     <module>util</module>
+     <module>sensor</module>
+     <module>vacuum</module>
+  </modules>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -25,4 +31,5 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
 </project>
