@@ -5,8 +5,4 @@ public interface IFloor {
 	int getLevel();
 	void addCell(ICell cell);
 	void cleanCell(int x, int y);
-	int getMinX();
-	int getMaxX();
-	int getMinY();
-	int getMaxY();
 }
