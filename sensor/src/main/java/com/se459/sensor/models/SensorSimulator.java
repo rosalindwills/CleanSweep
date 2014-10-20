@@ -16,7 +16,7 @@ import com.se459.sensor.enums.PathType;
 
 public class SensorSimulator implements ISensor, IDetect {
  
-       static final public String HOME_LAYOUT_FILE = "src"+ File.separator + "main"+ File.separator + "resources" + File.separator +"homeLayout1.xml";
+       static final public String HOME_LAYOUT_FILE = "sensor/src"+ File.separator + "main"+ File.separator + "resources" + File.separator +"homeLayout1.xml";
 
 	private IHomeLayout _homeLayout;
 
