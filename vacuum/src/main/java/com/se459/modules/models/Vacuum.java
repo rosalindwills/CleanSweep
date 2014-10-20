@@ -5,11 +5,15 @@ import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Log;
 import com.se459.util.log.LogFactory;
+import java.util.ArrayList;
 
 public class Vacuum implements Runnable {
 	private ISensor sim;
+        private ArrayList<ICell> storePrevLocation = new ArrayList<ICell>();
 	public volatile boolean on;
 	Log log = LogFactory.newFileLog();
+        Log scnLog = LogFactory.newScreenLog();
+        
 	
 	private int x, y;
 	private int dirtUnits;
@@ -28,6 +32,7 @@ public class Vacuum implements Runnable {
 		y = yPosition;
 		dirtUnits = 0;
 
+                scnLog.append("In vacuum constructor");
 		sim = sensorSimulator;
 	}
 	
@@ -35,6 +40,7 @@ public class Vacuum implements Runnable {
 	{
 		on = true;
 		
+                scnLog.append("Start Vacuum...");
 		thread = new Thread(this);
 		thread.start();
 		
@@ -45,6 +51,7 @@ public class Vacuum implements Runnable {
 	{
 		on = false;
 		
+                scnLog.append("Stop Vacuum...");
 		try {
 			thread.join();
 		} catch (InterruptedException e) {
@@ -64,6 +71,8 @@ public class Vacuum implements Runnable {
 			{
 				Sweep(currentCell);
 			}
+
+                        storePrevLocation.add(currentCell);
 		}
 	}
 

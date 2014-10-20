@@ -6,6 +6,7 @@ import com.se459.sensor.interfaces.ISensor;
 import com.se459.modules.models.Vacuum;
 import org.xml.sax.SAXException;
 import java.lang.Thread;
+import static java.lang.System.*;
 
 
 public class StartVacuum {
@@ -13,6 +14,9 @@ public class StartVacuum {
  public static void main(String[] args){
         ISensor sim;
         Vacuum vacuum;
+
+        out.println("In Program");
+        
 
         try {
             sim = SensorSimulator.getInstance();;
