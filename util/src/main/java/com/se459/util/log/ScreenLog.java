@@ -5,7 +5,7 @@ package com.se459.util.log;
 * @author Jerry Liu
 * @version 1.0 Oct 9, 2014.
 */
-class ScreenLog implements Log{
+public class ScreenLog implements Log{
 	
 	private int lenOfHorizontalLine = 30;
 	
