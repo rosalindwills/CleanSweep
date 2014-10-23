@@ -13,6 +13,7 @@
      <module>util</module>
      <module>sensor</module>
      <module>vacuum</module>
+     <module>visualization</module>
   </modules>
   <url>http://maven.apache.org</url>
 

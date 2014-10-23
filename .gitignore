@@ -11,6 +11,8 @@
 hs_err_pid*
 /bin
 
+target
+.metadata
 .classpath
 .project
 /target/
