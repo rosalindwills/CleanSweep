@@ -1,4 +1,4 @@
-package com.se459.visualization;
+package main.java.com.se459.visualization;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,19 +19,24 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import com.se459.modules.models.Vacuum;
 import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.IFloor;
 import com.se459.sensor.interfaces.IHomeLayout;
+import com.se459.sensor.interfaces.ISensor;
 import com.se459.sensor.models.HomeLayoutParser;
+import com.se459.sensor.models.SensorSimulator;
 
 class HomeLayoutPanel extends JPanel {
 
 	IFloor floor;
+	Vacuum vacuum;
 	
-	public HomeLayoutPanel(IFloor Floor)
+	public HomeLayoutPanel(IFloor Floor, Vacuum vac)
 	{		
 		floor = Floor;
+		vacuum = vac;
 	}
 	
     private void draw(Graphics g) 
@@ -40,12 +45,12 @@ class HomeLayoutPanel extends JPanel {
         
         Dimension dimension = getSize();
         
-        int xMult = dimension.width / (floor.getMaxX() - floor.getMinX());
-        int yMult = dimension.height / (floor.getMaxY() - floor.getMinY());
+        int xMult = dimension.width / (floor.getMaxX() - floor.getMinX() + 1);
+        int yMult = dimension.height / (floor.getMaxY() - floor.getMinY() + 1);
         
-        for(int x = floor.getMinX(); x < floor.getMaxX(); ++x)
+        for(int x = floor.getMinX(); x <= floor.getMaxX(); ++x)
         {
-        	for(int y = floor.getMinY(); y < floor.getMaxY(); ++y)
+        	for(int y = floor.getMinY(); y <= floor.getMaxY(); ++y)
         	{
         		ICell cell = floor.getCell(x, y);
 
@@ -66,6 +71,10 @@ class HomeLayoutPanel extends JPanel {
         			}
         		}
         	}
+        	
+        	// draw the vacuum
+			g2d.setColor(Color.black);
+        	g2d.drawOval(vacuum.x * xMult + xMult / 4, vacuum.y * yMult + yMult / 4, xMult / 2, yMult / 2);
         }
     }
 
@@ -112,22 +121,23 @@ class HomeLayoutPanel extends JPanel {
     }
 }
 
-public class HomeLayoutDrawer extends JFrame {
-
-	IHomeLayout homeLayout;
+public class HomeLayoutDrawer extends JFrame implements Runnable {
 	
-    public HomeLayoutDrawer(IHomeLayout layout) 
-    {
-    	homeLayout = layout;
-    	
-        initUI();
+	static boolean windowOpen = true;
+	HomeLayoutPanel layoutPanel;
+	static Thread thread;
+	
+    public HomeLayoutDrawer(IHomeLayout layout, Vacuum vacuum) 
+    {    	
+        initUI(layout, vacuum);
     }
 
-    private void initUI() 
+    private void initUI(IHomeLayout layout, Vacuum vacuum) 
     {
         setTitle("CleanSweep");
 
-        add(new HomeLayoutPanel(homeLayout.getFloor(1)));
+        layoutPanel = new HomeLayoutPanel(layout.getFloor(1), vacuum);
+        add(layoutPanel);
 
         setSize(400, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -136,33 +146,82 @@ public class HomeLayoutDrawer extends JFrame {
 
     public static void main(String[] args) 
     {
-		try {
-			XMLReader xr = XMLReaderFactory.createXMLReader();
-			HomeLayoutParser handler = new HomeLayoutParser();
-			xr.setContentHandler(handler);
-			xr.setErrorHandler(handler);
-			try {
-				FileReader r = new FileReader("src"+ File.separator + "resources"+ File.separator + "homeLayout1.xml");
-			    try {
-					xr.parse(new InputSource(r));
-					final IHomeLayout _homeLayout = handler.getHomeLayout();
-				    
-				    SwingUtilities.invokeLater(new Runnable() 
-			        {
-			            public void run() {
+		final ISensor sim = SensorSimulator.getInstance();
+		
+		try 
+		{
+			((SensorSimulator)sim).importXml("classes"+ File.separator + "homeLayout1.xml");
+			
+			final IHomeLayout _homeLayout = ((SensorSimulator) sim).getHomeLayout();
+		    
+		    SwingUtilities.invokeLater(new Runnable() 
+	        {
+	            public void run() {
 
-			                HomeLayoutDrawer sk = new HomeLayoutDrawer(_homeLayout);
-			                sk.setVisible(true);
-			            }
-			        });
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		} catch (SAXException e) {
+	        		ICell chargingCell = GetChargingStationLocation(_homeLayout.getFloor(1));
+	        		
+	        		Vacuum vacuum = Vacuum.getInstance(sim, chargingCell.getX(), chargingCell.getY());
+	        		vacuum.Start();
+	        		
+	                HomeLayoutDrawer sk = new HomeLayoutDrawer(_homeLayout, vacuum);
+	                sk.setVisible(true);
+	                
+	                sk.addWindowListener(new java.awt.event.WindowAdapter() {
+	                    @Override
+	                    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+	                    	HomeLayoutDrawer.windowOpen = false;
+	                    }
+	                });
+	                
+	                thread = new Thread(sk);
+	                thread.start();
+	            }
+	        });
+		} 
+		catch (SAXException e) 
+		{
+			e.printStackTrace();
+		} 
+		catch (IOException e) 
+		{
 			e.printStackTrace();
 		}
     }
+
+	private static ICell GetChargingStationLocation(IFloor floor)
+	{
+		for(int x = floor.getMinX(); x < floor.getMaxX(); ++x)
+	    {
+	    	for(int y = floor.getMinY(); y < floor.getMaxY(); ++y)
+	    	{
+	    		if(floor.getCell(x, y).getIsChargingStation())
+	    		{
+	    			return floor.getCell(x,y);
+	    		}
+	    	}
+	    }
+		
+		return null;
+	}
+	
+	public void run() {
+
+		while(windowOpen)
+		{
+			repaint();
+			layoutPanel.repaint();
+			
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

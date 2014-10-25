@@ -19,3 +19,6 @@ target
 
 # Others
 .DS_Store
+visualization/src/main/log/log
+vacuum/src/main/log/log
+vacuum/src/main/log/log

@@ -5,6 +5,7 @@ import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Log;
 import com.se459.util.log.LogFactory;
+
 import java.util.ArrayList;
 
 public class Vacuum implements Runnable {
@@ -15,9 +16,11 @@ public class Vacuum implements Runnable {
         Log scnLog = LogFactory.newScreenLog();
         
 	
-	private int x, y;
+	public int x, y;
 	private int dirtUnits;
 	final int dirtCapacity = 50;
+	
+	int xDir, yDir;
 	
 	// the thread the vacuum is running in
 	Thread thread;
@@ -30,6 +33,11 @@ public class Vacuum implements Runnable {
 	{
 		x = xPosition;
 		y = yPosition;
+		
+		// start moving down
+		xDir = 0;
+		yDir = -1;
+		
 		dirtUnits = 0;
 
                 scnLog.append("In vacuum constructor");
@@ -65,49 +73,60 @@ public class Vacuum implements Runnable {
 	{
 		while(on)
 		{
-			ICell currentCell = move(); 
+			ICell currentCell = sim.readCell(1, x, y);
+
+            storePrevLocation.add(currentCell);
 			
 			if(currentCell.getDirtUnits() > 0)
 			{
 				Sweep(currentCell);
 			}
-
-                        storePrevLocation.add(currentCell);
+			else if(null != getSensorCellInDirection())
+			{
+				moveForward();
+			}
+			else
+			{
+				turn();
+			}
+			
+            try 
+            {
+				Thread.sleep(500);
+			} 
+            catch (InterruptedException e) 
+            {
+				e.printStackTrace();
+			}
 		}
 	}
 
-        private ICell move(){
+	private ICell getSensorCellInDirection()
+	{
+		return sim.readCell(1, x + xDir, y + yDir);
+	}
+	
+	private void moveForward()
+	{
+		x += xDir;
+		y += yDir;
+		
+		scnLog.append("Moving forward, new location: " + x + ", " + y);			
+	}
+	
+	private void turn()
+	{
+		int prevXDir = xDir;
+		
+		xDir = -yDir;
+		yDir = prevXDir;
 
-            //add navigation logic  
-            return moveForward(); 
-        }
-
-
-        private ICell moveForward(){
-	    return sim.readCell(1, x, y+1);
-        }
-
-        private ICell moveBackward(){
-            return sim.readCell(1,x,y-1); 
-        }
-
-
-        private ICell moveRight(){
-            return sim.readCell(1,x+1,y);
-        }
-
-        private ICell moveLeft(){
-            return sim.readCell(1,x-1,y);
-        }
+		scnLog.append("Turned, new direction: " + xDir + ", " + yDir);		
+	}
 	
 	private void CheckIfFinishedCleaning()
 	{		
-		// right now it only sweeps and doesn't move, so if the current space is clean it is finished
-		if(sim.readCell(1, x, y).getDirtUnits() <= 0)
-		{
-			log.append("Finished Cleaning");
-			Stop();
-		}
+
 	}
 	
 	private void Sweep(ICell cell)
@@ -117,7 +136,7 @@ public class Vacuum implements Runnable {
 			cell.cleanCell();
 			++dirtUnits;
 
-			log.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
+			scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
 			
 			CheckIfFinishedCleaning();
 		}
