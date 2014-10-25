@@ -1,6 +1,5 @@
 package com.se459.modules.models;
 
-
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Log;
@@ -32,7 +31,6 @@ public class Vacuum implements Runnable {
 		y = yPosition;
 		dirtUnits = 0;
 
-                scnLog.append("In vacuum constructor");
 		sim = sensorSimulator;
 	}
 	
@@ -82,7 +80,6 @@ public class Vacuum implements Runnable {
             return moveForward(); 
         }
 
-
         private ICell moveForward(){
 	    return sim.readCell(1, x, y+1);
         }
@@ -90,7 +87,6 @@ public class Vacuum implements Runnable {
         private ICell moveBackward(){
             return sim.readCell(1,x,y-1); 
         }
-
 
         private ICell moveRight(){
             return sim.readCell(1,x+1,y);
@@ -105,7 +101,7 @@ public class Vacuum implements Runnable {
 		// right now it only sweeps and doesn't move, so if the current space is clean it is finished
 		if(sim.readCell(1, x, y).getDirtUnits() <= 0)
 		{
-			log.append("Finished Cleaning");
+			scnLog.append("Finished Cleaning");
 			Stop();
 		}
 	}
@@ -117,7 +113,7 @@ public class Vacuum implements Runnable {
 			cell.cleanCell();
 			++dirtUnits;
 
-			log.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
+			scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
 			
 			CheckIfFinishedCleaning();
 		}
