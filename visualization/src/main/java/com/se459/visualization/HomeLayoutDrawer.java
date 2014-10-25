@@ -71,10 +71,13 @@ class HomeLayoutPanel extends JPanel {
         			}
         		}
         	}
+
+			g2d.setColor(Color.green);
+        	g2d.drawOval(vacuum.GetDestinationX() * xMult + (int)(xMult / 2.6), vacuum.GetDestinationY() * yMult + (int)(yMult / 2.6), xMult / 4, yMult / 4);
         	
         	// draw the vacuum
 			g2d.setColor(Color.black);
-        	g2d.drawOval(vacuum.x * xMult + xMult / 4, vacuum.y * yMult + yMult / 4, xMult / 2, yMult / 2);
+        	g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY() * yMult + yMult / 4, xMult / 2, yMult / 2);
         }
     }
 
@@ -212,7 +215,7 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 			layoutPanel.repaint();
 			
 			try {
-				Thread.sleep(500);
+				Thread.sleep(250);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
