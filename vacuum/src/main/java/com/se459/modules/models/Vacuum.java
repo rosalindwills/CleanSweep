@@ -1,5 +1,6 @@
 package com.se459.modules.models;
 
+import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Log;
@@ -44,7 +45,7 @@ public class Vacuum implements Runnable {
 		chargeRemaining = chargeCapacity;
 		dirtUnits = 0;
 
-                scnLog.append("In vacuum constructor");
+        scnLog.append("In vacuum constructor");
 		sim = sensorSimulator;
 	}
 	
@@ -81,13 +82,16 @@ public class Vacuum implements Runnable {
 		while(on)
 		{
 			ICell currentCell = sim.readCell(1, x, y);
+			if (currentCell.getIsChargingStation()) {
+				processReturnToChargingStation();
+			}
 
 			if(!knownCells.contains(currentCell))
 			{
 				knownCells.add(currentCell);
 			}
 			
-			if(currentCell.getDirtUnits() > 0)
+			if(currentCell.getDirtUnits() > 0 && !CheckIfFullOfDirt())
 			{
 				Sweep(currentCell);
 			}
@@ -99,6 +103,11 @@ public class Vacuum implements Runnable {
 			{
 				MoveTowardsDestination();
 			}
+			scnLog.append("Next destination: " + destinationX + ", " + destinationY);
+			if (CheckIfFinishedCleaning() || CheckIfOutOfPower() || CheckIfFullOfDirt()) {
+				returnToChargingStation();
+			}
+			
 			
             try 
             {
@@ -111,9 +120,52 @@ public class Vacuum implements Runnable {
 		}
 	}
 	
-	private void CheckIfFinishedCleaning()
+	private boolean CheckIfFinishedCleaning()
 	{
-		
+		//@TODO add logic to check this
+		if (false) {
+			scnLog.append("Finished cleaning.");
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean CheckIfOutOfPower() {
+		// do we need to return to the charger? right now this just sees if we are below 50% charge, could be smarter about route planning in the future
+		if(chargeRemaining < (chargeCapacity / 2))
+		{
+			scnLog.append("Charge level necessitates return to base." + getStatus());
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean CheckIfFullOfDirt() {
+		if (dirtUnits >= dirtCapacity) {
+			scnLog.append("Dirt capacity reached." + getStatus());
+			return true;
+		}
+		return false;
+	}
+	
+	private void returnToChargingStation() {
+		ICell chargingCell = FindChargingCell();
+		destinationX = chargingCell.getX();
+		destinationY = chargingCell.getY();
+	}
+	
+	private void processReturnToChargingStation() {
+		scnLog.append("Recharging to full capacity." + getStatus());
+		chargeRemaining = chargeCapacity;
+		if (dirtUnits >= dirtCapacity) {
+			scnLog.append("Press any key to empty dirt.");
+	        try
+	        {
+	            System.in.read();
+	            scnLog.append("Emptying dirt.");
+	            dirtUnits = 0;
+	        } catch (Exception e) {}
+		}
 	}
 	
 	private void Sweep(ICell cell)
@@ -123,29 +175,28 @@ public class Vacuum implements Runnable {
 			cell.cleanCell();
 			++dirtUnits;
 
-			scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
+			if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
+				chargeRemaining -= 1;
+			} else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
+				chargeRemaining -= 2;
+			} else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
+				chargeRemaining -= 3;
+			}
 			
-			CheckIfFinishedCleaning();
+			scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + getStatus());			
 		}
 	}
 	
 	// pick the next destination for the vacuum to go to
 	private void SetNextDestination()
 	{
-		// do we need to return to the charger? right now this just sees if we are below 50% charge, could be smarter about route planning in the future
-		if(chargeRemaining < (chargeCapacity / 2))
-		{
-			ICell chargingCell = FindChargingCell();
-			destinationX = chargingCell.getX();
-			destinationY = chargingCell.getY();
-		}
-		else if(knownDirtyCells.size() > 0)
+		if(knownDirtyCells.size() > 0)
 		{
 			// find the nearest dirty cell
 			int closestDistance = Integer.MAX_VALUE;
 			ICell closestCell = null;
 			
-			for(int i = 0; i < knownDirtyCells.size(); ++i)
+			for(int i = 0; i < knownDirtyCells.size()	; ++i)
 			{
 				int distance = GetDistanceToCell(knownDirtyCells.get(i));
 				if(closestDistance > distance)
@@ -222,6 +273,11 @@ public class Vacuum implements Runnable {
 				}
 			}
 		}
+	}
+	
+	private void SetNextDestination(ICell cell) {
+		destinationX = cell.getX();
+		destinationY = cell.getY();
 	}
 	
 	private int GetDistanceToCell(ICell cell)
@@ -337,5 +393,9 @@ public class Vacuum implements Runnable {
 	public int GetDestinationY()
 	{
 		return destinationY;
+	}
+	
+	private String getStatus() {
+		return " current capacity: " + dirtUnits + "/" + dirtCapacity + ", current charge: " + chargeRemaining + "/" + chargeCapacity;
 	}
 }
