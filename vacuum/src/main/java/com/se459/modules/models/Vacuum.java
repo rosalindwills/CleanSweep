@@ -10,19 +10,15 @@ import java.util.ArrayList;
 
 public class Vacuum implements Runnable {
 	private ISensor sim;
+
+	VacuumMemory memory;
+	NavigationLogic navLogic;
 	
-    private ArrayList<ICell> knownCells = new ArrayList<ICell>();
-    private ArrayList<ICell> knownDirtyCells = new ArrayList<ICell>();
-    private ArrayList<Obstacle> knownObstacles = new ArrayList<Obstacle>();
-        
 	public volatile boolean on;
 	
 	Log log = LogFactory.newFileLog();
     Log scnLog = LogFactory.newScreenLog();
-	
-	private int x, y;
-	private int destinationX, destinationY;
-	
+
 	private int dirtUnits;
 	final int dirtCapacity = 50;
 	
@@ -34,19 +30,19 @@ public class Vacuum implements Runnable {
 
     static public Vacuum getInstance(ISensor sensor,int xPos, int yPos)
     { 
-          return new Vacuum(sensor,xPos,yPos);
+    	return new Vacuum(sensor,xPos,yPos);
     }
 	
 	private Vacuum(ISensor sensorSimulator, int xPosition, int yPosition)
 	{
-		x = xPosition;
-		y = yPosition;
-				
 		chargeRemaining = chargeCapacity;
 		dirtUnits = 0;
 
         scnLog.append("In vacuum constructor");
 		sim = sensorSimulator;
+		
+		memory = new VacuumMemory();
+		navLogic = new NavigationLogic(new Vector2(xPosition, yPosition), sim, memory, scnLog);
 	}
 	
 	public void Start()
@@ -81,24 +77,27 @@ public class Vacuum implements Runnable {
 	{
 		while(on)
 		{
-			ICell currentCell = sim.readCell(1, x, y);
+			ICell currentCell = sim.readCell(1, navLogic.currentPosition.x, navLogic.currentPosition.y);
 
-			if(!knownCells.contains(currentCell))
-			{
-				knownCells.add(currentCell);
-			}
+			memory.AddCell(currentCell);
 			
-			if(currentCell.getDirtUnits() > 0)
+			if(currentCell.getDirtUnits() > 0 && dirtUnits < dirtCapacity)
 			{
 				Sweep(currentCell);
 			}
-			else if(x == destinationX && y == destinationY)
+			else if(null == navLogic.currentPath)
 			{
+				if(navLogic.currentPosition.x == memory.FindChargingCell().getX() && navLogic.currentPosition.y == memory.FindChargingCell().getY())
+				{
+					EmptyDirt();
+					Charge();
+				}
+				
 				SetNextDestination();
 			}
 			else
 			{
-				MoveTowardsDestination();
+				navLogic.MoveTowardsDestination();
 			}
 			
             try 
@@ -117,17 +116,24 @@ public class Vacuum implements Runnable {
 		
 	}
 	
+	private void EmptyDirt()
+	{
+		dirtUnits = 0;
+	}
+	
+	private void Charge()
+	{
+		chargeRemaining = chargeCapacity;
+	}
+	
 	private void Sweep(ICell cell)
 	{
-		// if(dirtUnits < dirtCapacity)
-		{
-			cell.cleanCell();
-			++dirtUnits;
+		cell.cleanCell();
+		++dirtUnits;
 
-			scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
-			
-			CheckIfFinishedCleaning();
-		}
+		scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
+		
+		CheckIfFinishedCleaning();
 	}
 	
 	// pick the next destination for the vacuum to go to
@@ -136,207 +142,35 @@ public class Vacuum implements Runnable {
 		// do we need to return to the charger? right now this just sees if we are below 50% charge, could be smarter about route planning in the future
 		if(chargeRemaining < (chargeCapacity / 2))
 		{
-			ICell chargingCell = FindChargingCell();
-			destinationX = chargingCell.getX();
-			destinationY = chargingCell.getY();
+			navLogic.SetDestinationToBaseStation();
 		}
-		else if(knownDirtyCells.size() > 0)
+		else if(dirtUnits == dirtCapacity)
 		{
-			// find the nearest dirty cell
-			int closestDistance = Integer.MAX_VALUE;
-			ICell closestCell = null;
-			
-			for(int i = 0; i < knownDirtyCells.size(); ++i)
-			{
-				int distance = GetDistanceToCell(knownDirtyCells.get(i));
-				if(closestDistance > distance)
-				{
-					closestCell = knownDirtyCells.get(i);
-					closestDistance = distance;
-				}
-			}
-
-			destinationX = closestCell.getX();
-			destinationY = closestCell.getY();
+			navLogic.SetDestinationToBaseStation();
 		}
 		else
 		{
-			// find the nearest cell that we don't know about
-			int offset = 1;
-			
-			while(true)
-			{
-				int offset2 = 0;
-				
-				while(offset2 <= offset)
-				{
-					if(null == GetKnownCellAtPoint(x - offset, y - offset2) && null == GetKnownObstacleAtPoint(x - offset, y - offset2))
-					{
-						destinationX = x - offset;
-						destinationY = y - offset2;
-						return;
-					}
-					else if(null == GetKnownCellAtPoint(x - offset, y + offset2) && null == GetKnownObstacleAtPoint(x - offset, y + offset2))
-					{
-						destinationX = x - offset;
-						destinationY = y + offset2;
-						return;
-					}
-					else if(null == GetKnownCellAtPoint(x + offset, y - offset2) && null == GetKnownObstacleAtPoint(x + offset, y - offset2))
-					{
-						destinationX = x + offset;
-						destinationY = y - offset2;
-						return;
-					}
-					else if(null == GetKnownCellAtPoint(x + offset, y + offset2) && null == GetKnownObstacleAtPoint(x + offset, y + offset2))
-					{
-						destinationX = x + offset;
-						destinationY = y + offset2;
-						return;
-					}
-					else if(null == GetKnownCellAtPoint(x - offset2, y - offset) && null == GetKnownObstacleAtPoint(x - offset2, y - offset))
-					{
-						destinationX = x - offset2;
-						destinationY = y - offset;
-						return;
-					}
-					else if(null == GetKnownCellAtPoint(x + offset2, y - offset) && null == GetKnownObstacleAtPoint(x + offset2, y - offset))
-					{
-						destinationX = x + offset2;
-						destinationY = y - offset;
-						return;
-					}
-					else if(null == GetKnownCellAtPoint(x - offset2, y + offset) && null == GetKnownObstacleAtPoint(x - offset2, y + offset))
-					{
-						destinationX = x - offset2;
-						destinationY = y + offset;
-						return;
-					}
-					else if(null == GetKnownCellAtPoint(x + offset2, y + offset) && null == GetKnownObstacleAtPoint(x + offset2, y + offset))
-					{
-						destinationX = x + offset2;
-						destinationY = y + offset;
-						return;
-					}
-					
-					++offset2;
-				}
-			}
+			navLogic.SetPathToDirtyOrUnknown();
 		}
-	}
-	
-	private int GetDistanceToCell(ICell cell)
-	{
-		return GetDistanceToPoint(cell.getX(), cell.getY());
-	}
-	
-	private int GetDistanceToPoint(int pointX, int pointY)
-	{
-		return Math.abs(x - pointX) + Math.abs(y - pointY);
-	}
-	
-	private ICell GetKnownCellAtPoint(int x, int y)
-	{
-		for(int i = 0; i < knownCells.size(); ++i)
-		{
-			ICell cell = knownCells.get(i);
-			if(cell.getX() == x && cell.getY() == y)
-			{
-				return cell;
-			}
-		}
-		
-		return null;
-	}
-	
-	private Obstacle GetKnownObstacleAtPoint(int x, int y)
-	{
-		for(int i = 0; i < knownObstacles.size(); ++i)
-		{
-			Obstacle obstacle = knownObstacles.get(i);
-			if(obstacle.GetX() == x && obstacle.GetY() == y)
-			{
-				return obstacle;
-			}
-		}
-		
-		return null;
-	}
-	
-	private void MoveTowardsDestination()
-	{
-		int xDist = GetDestinationX() - x;
-		int yDist = GetDestinationY() - y;
-		
-		int xDir = 0;
-		int yDir = 0;
-		
-		if(Math.abs(xDist) > Math.abs(yDist))
-		{
-			if(xDist > 0)
-			{
-				xDir = 1;
-			}
-			else
-			{
-				xDir = -1;
-			}
-		}
-		else
-		{
-			if(yDist > 0)
-			{
-				yDir = 1;
-			}
-			else
-			{
-				yDir = -1;
-			}
-		}		
-		
-		if(null == sim.readCell(1, x + xDir, y + yDir))
-		{
-			knownObstacles.add(new Obstacle(x + xDir, y + yDir));
-			SetNextDestination();
-		}
-		else
-		{
-			x += xDir;
-			y += yDir;
-		}
-	}
-	
-	private ICell FindChargingCell()
-	{
-		for(int i = 0; i < knownCells.size(); ++i)
-		{
-			if(knownCells.get(i).getIsChargingStation())
-			{
-				return knownCells.get(i);
-			}
-		}
-		
-		scnLog.append("Could not find charging station in list of known cells.");
-		return null;
 	}
 	
 	public int GetX()
 	{
-		return x;
+		return navLogic.currentPosition.x;
 	}
 	
 	public int GetY()
 	{
-		return y;
+		return navLogic.currentPosition.y;
 	}
 	
 	public int GetDestinationX()
 	{
-		return destinationX;
+		return navLogic.navigationDestination.x;
 	}
 	
 	public int GetDestinationY()
 	{
-		return destinationY;
+		return navLogic.navigationDestination.y;
 	}
 }
