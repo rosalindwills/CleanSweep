@@ -126,9 +126,9 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 	HomeLayoutPanel layoutPanel;
 	JPanel statusPanel;
 	static Thread thread;
-	static int maximumWindowlWidth = 700;
+	static int maximumWindowlWidth = 600;
 	static int statusPanelHeight = 50;
-	static int maximumLayoutPanelHeight = 700;
+	static int maximumLayoutPanelHeight = 500;
 	static int maximumCellSize = 100;
 	static int minimumCellSize = 5;
 	
@@ -244,14 +244,16 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 			String dirtStatusStr = "DirtUnits: " + layoutPanel.vacuum.getDirtUnits();
 			String chargeStatusStr = "ChargeRemaining: " + layoutPanel.vacuum.getChargeRemaining();
 			String returnPathNum = "#ReturnPath: " + layoutPanel.vacuum.currentReturnPathNum;
-			String pathCost = "ReturnPathCost: " + layoutPanel.vacuum.returnCost;
-			statusPanel.add(new JLabel(locationStr + "    " + dirtStatusStr + "    " + chargeStatusStr + "    " +pathCost + "    "+ returnPathNum));
+			String pathCost = "ReturnCost: " + layoutPanel.vacuum.returnCost;
+			String dispaly = dirtStatusStr + "    " + chargeStatusStr + "    " +pathCost + "    "+ returnPathNum;
+
+			statusPanel.add(new JLabel(dispaly));
 			statusPanel.validate();
 			layoutPanel.repaint();
 			repaint();
 			
 			try {
-				Thread.sleep(300);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

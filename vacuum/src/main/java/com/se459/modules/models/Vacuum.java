@@ -1,5 +1,6 @@
 package com.se459.modules.models;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,36 +87,28 @@ public class Vacuum implements Runnable {
 			
 			if (currentCell.getIsChargingStation() && chargeRemaining < chargeCapacity) 
 			{
-			//	log1.append("1");
 				processReturnToChargingStation();
 			}
 			else if(currentCell.getDirtUnits() > 0 && !CheckIfFullOfDirt())
 			{
-			//	log1.append("2");
 				Sweep(currentCell);
 			}
 			else if(null == navLogic.currentPath)
 			{	
-			//	log1.append("3");
 				SetNextDestination();
 			}
 			else
 			{
-			//	log1.append("4");
 				navLogic.MoveTowardsDestination();
 			}
-			
-			//log1.append("@");
-			boolean b = CheckIfOutOfPower();
-			//log1.append("@");
 					
-			if (CheckIfFinishedCleaning() || b || CheckIfFullOfDirt()) {
+			if (CheckIfFinishedCleaning() || CheckIfOutOfPower() || CheckIfFullOfDirt()) {
 				navLogic.SetDestinationToBaseStation();
 			}			
 			
             try 
             {
-				Thread.sleep(300);
+				Thread.sleep(100);
 			} 
             catch (InterruptedException e) 
             {
@@ -138,7 +131,7 @@ public class Vacuum implements Runnable {
 		
 		ICell currentCell = sim.readCell(1, navLogic.currentPosition.x, navLogic.currentPosition.y);
 		
-		List<ICell> cells = new ArrayList(this.memory.knownCells);
+		List<ICell> cells = new ArrayList<ICell>(this.memory.knownCells);
 		if(!cells.contains(currentCell)){
 			cells.add(currentCell);
 		}
@@ -162,12 +155,14 @@ public class Vacuum implements Runnable {
 			int pathChargeCost = 0;
 			List<ICell> path = paths.get(i);
 			for (ICell cell : path){
+				if(!(cell.getX() == navLogic.currentPosition.x && cell.getY() == navLogic.currentPosition.y)){
 				if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
 					pathChargeCost += 1;
 				} else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
 					pathChargeCost += 2;
 				} else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
 					pathChargeCost += 3;
+				}
 				}
 				
 				if (pathChargeCost >= minimumChargeCost){
@@ -181,6 +176,13 @@ public class Vacuum implements Runnable {
 		}
 		
 		returnCost = minimumChargeCost;
+
+		/*
+		 * THIS IS THE RETURN PATH
+		 * 
+		 */
+		List<ICell> returnPath = paths.get(minimumChargeCostPathNum);
+		
 		return this.chargeRemaining <= minimumChargeCost;
 
 	
