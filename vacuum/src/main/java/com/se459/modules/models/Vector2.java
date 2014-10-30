@@ -1,8 +1,7 @@
 package com.se459.modules.models;
 
 public class Vector2 {
-	public int x;
-	public int y;
+	int x, y;
 	
 	public Vector2(int x, int y)
 	{

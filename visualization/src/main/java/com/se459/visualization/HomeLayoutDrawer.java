@@ -51,7 +51,7 @@ class HomeLayoutPanel extends JPanel {
         		ICell cell = floor.getCell(x, y);
 
         		if(null != cell)
-        		{        		
+        		{
         			g2d.setColor(getSurfaceColor(cell.getSurfaceType(), cell.getDirtUnits()));
         			
         			Rectangle2D rect = new Rectangle2D.Float(x * xMult, y * yMult , xMult, yMult);
@@ -132,6 +132,8 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 	static int maximumCellSize = 100;
 	static int minimumCellSize = 5;
 	
+	static int padding = 50;
+	
 	
     public HomeLayoutDrawer(IHomeLayout layout, Vacuum vacuum) 
     {    	
@@ -151,7 +153,7 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
         		maximumLayoutPanelHeight, maximumCellSize, minimumCellSize); 
         int actualLayoutPanelWidth = actualCellSize * rows;
         int actualLayoutPanelHeight = actualCellSize * cols;   
-        setSize(actualLayoutPanelWidth, actualLayoutPanelHeight+statusPanelHeight);
+        setSize(actualLayoutPanelWidth + padding, actualLayoutPanelHeight + statusPanelHeight + padding);
         
         FlowLayout UILayout = new FlowLayout();
         UILayout.setHgap(0);
@@ -248,7 +250,7 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 			repaint();
 			
 			try {
-				Thread.sleep(250);
+				Thread.sleep(125);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

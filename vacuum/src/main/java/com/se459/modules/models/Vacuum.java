@@ -81,23 +81,16 @@ public class Vacuum implements Runnable {
 
 			memory.AddCell(currentCell);
 			
-			if (currentCell.getIsChargingStation()) 
+			if (currentCell.getIsChargingStation() && chargeRemaining < chargeCapacity) 
 			{
 				processReturnToChargingStation();
 			}
-			
-			if(currentCell.getDirtUnits() > 0 && !CheckIfFullOfDirt())
+			else if(currentCell.getDirtUnits() > 0 && !CheckIfFullOfDirt())
 			{
 				Sweep(currentCell);
 			}
 			else if(null == navLogic.currentPath)
-			{
-				if(currentCell.getIsChargingStation())
-				{
-					EmptyDirt();
-					Charge();
-				}
-				
+			{				
 				SetNextDestination();
 			}
 			else
@@ -111,7 +104,7 @@ public class Vacuum implements Runnable {
 			
             try 
             {
-				Thread.sleep(250);
+				Thread.sleep(125);
 			} 
             catch (InterruptedException e) 
             {
@@ -152,18 +145,19 @@ public class Vacuum implements Runnable {
 		scnLog.append("Recharging to full capacity." + getStatus());
 		chargeRemaining = chargeCapacity;
 		if (dirtUnits >= dirtCapacity) {
-			scnLog.append("Press any key to empty dirt.");
-	        try
+			// scnLog.append("Press any key to empty dirt.");
+	        //try
 	        {
-	            System.in.read();
-	            scnLog.append("Emptying dirt.");
-	            dirtUnits = 0;
-	        } catch (Exception e) {}
+	            //System.in.read();
+	            EmptyDirt();
+	            Charge();
+	        } // catch (Exception e) {}
 		}
 	}
 	
 	private void EmptyDirt()
 	{
+        scnLog.append("Emptying dirt.");
 		dirtUnits = 0;
 	}
 	

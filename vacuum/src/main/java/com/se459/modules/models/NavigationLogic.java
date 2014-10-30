@@ -56,7 +56,7 @@ public class NavigationLogic {
 			}
 
 			navigationDestination = new Vector2(closestCell.getX(), closestCell.getY());
-			currentPath = Path.GetPathToDestination(currentPosition, navigationDestination);
+			currentPath = Path.GetPathToDestination(currentPosition.x, currentPosition.y, navigationDestination.x, navigationDestination.y, memory, log);
 		}
 	}
 	
@@ -117,10 +117,12 @@ public class NavigationLogic {
 			{
 				break;
 			}
+			
+			++offset;
 		}
 		
 		navigationDestination = destination;
-		currentPath = Path.GetPathToDestination(currentPosition, destination);
+		currentPath = Path.GetPathToDestination(currentPosition.x, currentPosition.y, navigationDestination.x, navigationDestination.y, memory, log);
 		
 		log.append("Setting destination to: " + navigationDestination.x + ", " + navigationDestination.y);
 	}
@@ -132,7 +134,7 @@ public class NavigationLogic {
 		if(null != chargingCell)
 		{
 			navigationDestination =  new Vector2(chargingCell.getX(), chargingCell.getY());
-			currentPath = Path.GetPathToDestination(currentPosition, navigationDestination);
+			currentPath = Path.GetPathToDestination(currentPosition.x, currentPosition.y, navigationDestination.x, navigationDestination.y, memory, log);
 		}
 	}
 
@@ -148,49 +150,26 @@ public class NavigationLogic {
 	
 	public void MoveTowardsDestination()
 	{
-		int xDist = currentPath.endingPosition.x - currentPosition.x;
-		int yDist = currentPath.endingPosition.y - currentPosition.y;
-		
-		int xDir = 0;
-		int yDir = 0;
-		
-		if(xDist == 0 && yDist == 0)
+		if(null != currentPath)
 		{
-			currentPath = null;
-			return;
-		}
-		else if(Math.abs(xDist) > Math.abs(yDist))
-		{
-			if(xDist > 0)
+			if(currentPath.HasNext())
 			{
-				xDir = 1;
+				Vector2 desiredPosition = currentPath.GetNextPosition();
+				
+				if(null == sensor.readCell(1, desiredPosition.x, desiredPosition.y))
+				{
+					memory.AddObstacle(new Obstacle(desiredPosition.x, desiredPosition.y));
+					SetPathToDirtyOrUnknown();
+				}
+				else
+				{
+					currentPosition = desiredPosition;
+				}
 			}
 			else
 			{
-				xDir = -1;
+				currentPath = null;
 			}
-		}
-		else
-		{
-			if(yDist > 0)
-			{
-				yDir = 1;
-			}
-			else
-			{
-				yDir = -1;
-			}
-		}
-		
-		if(null == sensor.readCell(1, currentPosition.x + xDir, currentPosition.y + yDir))
-		{
-			memory.AddObstacle(new Obstacle(currentPosition.x + xDir, currentPosition.y + yDir));
-			SetPathToDirtyOrUnknown();
-		}
-		else
-		{
-			currentPosition.x += xDir;
-			currentPosition.y += yDir;
 		}
 	}	
 }
