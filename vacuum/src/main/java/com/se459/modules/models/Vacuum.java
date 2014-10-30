@@ -30,6 +30,7 @@ public class Vacuum implements Runnable {
 	// for testing, variables below should be removed finally.
 	public int currentReturnPathNum = 0;
 	public int returnCost = 0;
+	public List<ICell> returnPath = new ArrayList<ICell>();
 	// the thread the vacuum is running in
 	Thread thread;
 
@@ -181,7 +182,7 @@ public class Vacuum implements Runnable {
 		 * THIS IS THE RETURN PATH
 		 * 
 		 */
-		List<ICell> returnPath = paths.get(minimumChargeCostPathNum);
+	   returnPath = paths.get(minimumChargeCostPathNum);
 		
 		return this.chargeRemaining <= minimumChargeCost;
 

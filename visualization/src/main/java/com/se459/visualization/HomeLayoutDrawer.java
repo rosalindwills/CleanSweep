@@ -75,6 +75,12 @@ class HomeLayoutPanel extends JPanel {
 			g2d.setColor(Color.black);
         	g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY() * yMult + yMult / 4, xMult / 2, yMult / 2);
         }
+        
+    	for(ICell c : vacuum.returnPath){
+    		g2d.setColor(Color.red);
+    		g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY() * yMult + yMult *4 / 10, xMult/5, yMult/5);
+    		
+    	}
     }
 
     private Color getSurfaceColor(SurfaceType type, int dirtUnits)
