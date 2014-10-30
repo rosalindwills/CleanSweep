@@ -1,6 +1,6 @@
 package com.se459.modules.models;
 
-
+import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Log;
@@ -81,13 +81,18 @@ public class Vacuum implements Runnable {
 
 			memory.AddCell(currentCell);
 			
-			if(currentCell.getDirtUnits() > 0 && dirtUnits < dirtCapacity)
+			if (currentCell.getIsChargingStation()) 
+			{
+				processReturnToChargingStation();
+			}
+			
+			if(currentCell.getDirtUnits() > 0 && !CheckIfFullOfDirt())
 			{
 				Sweep(currentCell);
 			}
 			else if(null == navLogic.currentPath)
 			{
-				if(navLogic.currentPosition.x == memory.FindChargingCell().getX() && navLogic.currentPosition.y == memory.FindChargingCell().getY())
+				if(currentCell.getIsChargingStation())
 				{
 					EmptyDirt();
 					Charge();
@@ -100,6 +105,10 @@ public class Vacuum implements Runnable {
 				navLogic.MoveTowardsDestination();
 			}
 			
+			if (CheckIfFinishedCleaning() || CheckIfOutOfPower() || CheckIfFullOfDirt()) {
+				navLogic.SetDestinationToBaseStation();
+			}			
+			
             try 
             {
 				Thread.sleep(250);
@@ -111,9 +120,46 @@ public class Vacuum implements Runnable {
 		}
 	}
 	
-	private void CheckIfFinishedCleaning()
+	private boolean CheckIfFinishedCleaning()
 	{
-		
+		//@TODO add logic to check this
+		if (false) {
+			scnLog.append("Finished cleaning.");
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean CheckIfOutOfPower() {
+		// do we need to return to the charger? right now this just sees if we are below 50% charge, could be smarter about route planning in the future
+		if(chargeRemaining < (chargeCapacity / 2))
+		{
+			scnLog.append("Charge level necessitates return to base." + getStatus());
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean CheckIfFullOfDirt() {
+		if (dirtUnits >= dirtCapacity) {
+			scnLog.append("Dirt capacity reached." + getStatus());
+			return true;
+		}
+		return false;
+	}
+	
+	private void processReturnToChargingStation() {
+		scnLog.append("Recharging to full capacity." + getStatus());
+		chargeRemaining = chargeCapacity;
+		if (dirtUnits >= dirtCapacity) {
+			scnLog.append("Press any key to empty dirt.");
+	        try
+	        {
+	            System.in.read();
+	            scnLog.append("Emptying dirt.");
+	            dirtUnits = 0;
+	        } catch (Exception e) {}
+		}
 	}
 	
 	private void EmptyDirt()
@@ -121,19 +167,28 @@ public class Vacuum implements Runnable {
 		dirtUnits = 0;
 	}
 	
+	private void Sweep(ICell cell)
+	{
+		if(dirtUnits < dirtCapacity)
+		{
+			cell.cleanCell();
+			++dirtUnits;
+
+			if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
+				chargeRemaining -= 1;
+			} else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
+				chargeRemaining -= 2;
+			} else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
+				chargeRemaining -= 3;
+			}
+			
+			scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + getStatus());			
+		}
+	}
+	
 	private void Charge()
 	{
 		chargeRemaining = chargeCapacity;
-	}
-	
-	private void Sweep(ICell cell)
-	{
-		cell.cleanCell();
-		++dirtUnits;
-
-		scnLog.append("Cleaned dirt from cell: " + cell.getX() + ", " + cell.getY() + " current capacity: " + dirtUnits + "/" + dirtCapacity);			
-		
-		CheckIfFinishedCleaning();
 	}
 	
 	// pick the next destination for the vacuum to go to
@@ -172,5 +227,9 @@ public class Vacuum implements Runnable {
 	public int GetDestinationY()
 	{
 		return navLogic.navigationDestination.y;
+	}
+	
+	private String getStatus() {
+		return " current capacity: " + dirtUnits + "/" + dirtCapacity + ", current charge: " + chargeRemaining + "/" + chargeCapacity;
 	}
 }

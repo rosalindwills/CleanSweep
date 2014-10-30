@@ -15,11 +15,8 @@ public class StartVacuum {
         ISensor sim;
         Vacuum vacuum;
 
-        out.println("In Program");
-        
-
         try {
-            sim = SensorSimulator.getInstance();;
+            sim = SensorSimulator.getInstance();
             sim.importXml(SensorSimulator.HOME_LAYOUT_FILE);
             vacuum = Vacuum.getInstance(sim,0,0);
 
