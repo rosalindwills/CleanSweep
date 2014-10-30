@@ -104,9 +104,9 @@ class HomeLayoutPanel extends JPanel {
 				break;    				
     	}
     	
-    	r *= Math.pow(0.9, dirtUnits);
-    	g *= Math.pow(0.9, dirtUnits);
-    	b *= Math.pow(0.9, dirtUnits);    	
+    	r *= Math.pow(0.8, dirtUnits);
+    	g *= Math.pow(0.8, dirtUnits);
+    	b *= Math.pow(0.8, dirtUnits);    	
 
     	Color color = new Color(r, g, b, 1.0f);    	
     	return color;
@@ -126,9 +126,9 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 	HomeLayoutPanel layoutPanel;
 	JPanel statusPanel;
 	static Thread thread;
-	static int maximumWindowlWidth = 500;
+	static int maximumWindowlWidth = 700;
 	static int statusPanelHeight = 50;
-	static int maximumLayoutPanelHeight = 600;
+	static int maximumLayoutPanelHeight = 700;
 	static int maximumCellSize = 100;
 	static int minimumCellSize = 5;
 	
@@ -243,14 +243,15 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 			String locationStr = "(" + layoutPanel.vacuum.GetX()+", "+layoutPanel.vacuum.GetY()+")";
 			String dirtStatusStr = "DirtUnits: " + layoutPanel.vacuum.getDirtUnits();
 			String chargeStatusStr = "ChargeRemaining: " + layoutPanel.vacuum.getChargeRemaining();
-			
-			statusPanel.add(new JLabel(locationStr + "   " + dirtStatusStr + "   " + chargeStatusStr));
+			String returnPathNum = "#ReturnPath: " + layoutPanel.vacuum.currentReturnPathNum;
+			String pathCost = "ReturnPathCost: " + layoutPanel.vacuum.returnCost;
+			statusPanel.add(new JLabel(locationStr + "    " + dirtStatusStr + "    " + chargeStatusStr + "    " +pathCost + "    "+ returnPathNum));
 			statusPanel.validate();
 			layoutPanel.repaint();
 			repaint();
 			
 			try {
-				Thread.sleep(125);
+				Thread.sleep(300);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

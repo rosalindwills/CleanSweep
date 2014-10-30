@@ -1,5 +1,6 @@
 package com.se459.sensor.models;
 
+
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.enums.PathType;
 import com.se459.sensor.enums.SurfaceType;
@@ -77,5 +78,15 @@ public class Cell implements ICell {
 		builder.append("          Positive Y Path: " + _pathPosY.toString() + "\n");
 		builder.append("          Negative Y Path: " + _pathNegY.toString() + "\n");
 		return builder.toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		 if (!(obj instanceof Cell))
+	            return false;
+	        if (obj == this)
+	            return true;
+	        Cell cell = (Cell) obj;
+	        return cell._x == this._x && cell._y == this._y;
 	}
 }
