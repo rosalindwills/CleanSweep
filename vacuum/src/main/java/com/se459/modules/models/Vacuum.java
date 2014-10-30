@@ -232,4 +232,12 @@ public class Vacuum implements Runnable {
 	private String getStatus() {
 		return " current capacity: " + dirtUnits + "/" + dirtCapacity + ", current charge: " + chargeRemaining + "/" + chargeCapacity;
 	}
+
+	public int getDirtUnits() {
+		return dirtUnits;
+	}
+
+	public int getChargeRemaining() {
+		return chargeRemaining;
+	}
 }

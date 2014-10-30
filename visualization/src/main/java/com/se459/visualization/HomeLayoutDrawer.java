@@ -2,22 +2,19 @@ package main.java.com.se459.visualization;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.se459.modules.models.Vacuum;
 import com.se459.sensor.enums.SurfaceType;
@@ -25,7 +22,6 @@ import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.IFloor;
 import com.se459.sensor.interfaces.IHomeLayout;
 import com.se459.sensor.interfaces.ISensor;
-import com.se459.sensor.models.HomeLayoutParser;
 import com.se459.sensor.models.SensorSimulator;
 
 class HomeLayoutPanel extends JPanel {
@@ -58,7 +54,7 @@ class HomeLayoutPanel extends JPanel {
         		{        		
         			g2d.setColor(getSurfaceColor(cell.getSurfaceType(), cell.getDirtUnits()));
         			
-        			Rectangle2D rect = new Rectangle2D.Float(x * xMult, y * yMult, xMult, yMult);
+        			Rectangle2D rect = new Rectangle2D.Float(x * xMult, y * yMult , xMult, yMult);
         			
         			g2d.fill(rect);
         			
@@ -128,7 +124,14 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 	
 	static boolean windowOpen = true;
 	HomeLayoutPanel layoutPanel;
+	JPanel statusPanel;
 	static Thread thread;
+	static int maximumWindowlWidth = 500;
+	static int statusPanelHeight = 50;
+	static int maximumLayoutPanelHeight = 600;
+	static int maximumCellSize = 100;
+	static int minimumCellSize = 5;
+	
 	
     public HomeLayoutDrawer(IHomeLayout layout, Vacuum vacuum) 
     {    	
@@ -138,11 +141,34 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
     private void initUI(IHomeLayout layout, Vacuum vacuum) 
     {
         setTitle("CleanSweep");
-
+        
+        int rows = layout.getFloor(1).getMaxX() -layout.getFloor(1).getMinX() + 1;
+        int cols = layout.getFloor(1).getMaxY() - layout.getFloor(1).getMinY() + 1;
+        
+     // given a maximum size of window, call getCellSize to calculate
+     // a proper size for cell based on floor plan.
+        int actualCellSize = calculateCellSize(rows, cols, maximumWindowlWidth, 
+        		maximumLayoutPanelHeight, maximumCellSize, minimumCellSize); 
+        int actualLayoutPanelWidth = actualCellSize * rows;
+        int actualLayoutPanelHeight = actualCellSize * cols;   
+        setSize(actualLayoutPanelWidth, actualLayoutPanelHeight+statusPanelHeight);
+        
+        FlowLayout UILayout = new FlowLayout();
+        UILayout.setHgap(0);
+        UILayout.setVgap(0);
+        setLayout(UILayout);
+      
+        
+        statusPanel = new JPanel();
+        statusPanel.setPreferredSize(new Dimension(actualLayoutPanelWidth,statusPanelHeight));
+        
         layoutPanel = new HomeLayoutPanel(layout.getFloor(1), vacuum);
+        layoutPanel.setPreferredSize(new Dimension(actualLayoutPanelWidth,actualLayoutPanelHeight));
+        
+        add(statusPanel);
         add(layoutPanel);
-
-        setSize(400, 600);
+        
+        
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
     }
@@ -166,7 +192,7 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 	        		Vacuum vacuum = Vacuum.getInstance(sim, chargingCell.getX(), chargingCell.getY());
 	        		vacuum.Start();
 	        		
-	                HomeLayoutDrawer sk = new HomeLayoutDrawer(_homeLayout, vacuum);
+	                HomeLayoutDrawer sk = new HomeLayoutDrawer(_homeLayout, vacuum);               
 	                sk.setVisible(true);
 	                
 	                sk.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -211,8 +237,15 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 
 		while(windowOpen)
 		{
-			repaint();
+			statusPanel.removeAll();
+			String locationStr = "(" + layoutPanel.vacuum.GetX()+", "+layoutPanel.vacuum.GetY()+")";
+			String dirtStatusStr = "DirtUnits: " + layoutPanel.vacuum.getDirtUnits();
+			String chargeStatusStr = "ChargeRemaining: " + layoutPanel.vacuum.getChargeRemaining();
+			
+			statusPanel.add(new JLabel(locationStr + "   " + dirtStatusStr + "   " + chargeStatusStr));
+			statusPanel.validate();
 			layoutPanel.repaint();
+			repaint();
 			
 			try {
 				Thread.sleep(250);
@@ -226,5 +259,16 @@ public class HomeLayoutDrawer extends JFrame implements Runnable {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private int calculateCellSize(int cols, int rows, int maximumWidth, int maximumHeight, int maximumCellSize, int minimumCellSize){
+        
+		for(int cellSizeCandidate = maximumCellSize; cellSizeCandidate > minimumCellSize; cellSizeCandidate--){
+        	if(cols * cellSizeCandidate <= maximumWidth && rows * cellSizeCandidate <= maximumHeight){
+        		return cellSizeCandidate;
+        	}
+        }
+        
+        return minimumCellSize;
 	}
 }
