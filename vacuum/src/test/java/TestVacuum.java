@@ -35,7 +35,8 @@ public class TestVacuum {
 	@Test
 	public void test1() 
 	{
-		vacuum = Vacuum.getInstance(sim,0,0);
+		vacuum = Vacuum.getInstance(sim, 1
+				, 0, 0);
 		
 		vacuum.Start();
 

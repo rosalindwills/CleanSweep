@@ -36,254 +36,180 @@ import java.util.List;
  }
  */
 
+import com.se459.sensor.enums.PathType;
 import com.se459.sensor.interfaces.ICell;
 
 public class PathFinder {
-	private List<ICell> completedCells = new ArrayList<ICell>();
+	private List<ICell> cellsCanBeUsed = new ArrayList<ICell>();
 	private List<ICell> reducedCells = new ArrayList<ICell>();
 	private List<List<ICell>> paths = new ArrayList<List<ICell>>();
-	private int tolerance = 0;
+
+	private int maxPaths = 50000;
 
 	public PathFinder(List<ICell> cells) {
-		this.completedCells = new ArrayList<ICell>(cells);
+		this.cellsCanBeUsed = new ArrayList<ICell>(cells);
 	}
 
-	public List<List<ICell>> findAllPath(int startX, int startY, int endX,
-			int endY) {
-		if (!(startX == endX && startY == endY)) {
-			reduceCells(startX, startY, endX, endY, tolerance);
-			ICell root = getCell(startX, startY);
-			List<ICell> path = new ArrayList<ICell>();
-			path.add(root);
-
-			boolean xDirection = false;
-			boolean yDirection = false;
-			if (startX <= endX) {
-				xDirection = true;
-			}
-			if (startY <= endY) {
-				yDirection = true;
-			}
-			// next(root.getX(), root.getY(), endX, endY, path);
-			nextUsingReduce(root.getX(), root.getY(), endX, endY, path,
-					xDirection, yDirection);
-
-			if (paths.size() == 0) {
-				next(startX, startY, endX, endY, path, xDirection, yDirection);
+	public List<List<ICell>> findAllPath(ICell start, ICell end) {
+		if (!start.equals(end)) {
+			for (int toleranceX = 0; toleranceX <= 6; toleranceX++) {
+				for (int toleranceY = 0; toleranceY <= 6; toleranceY++) {
+					this.reduceCells(start.getX(), start.getY(), end.getX(),
+							end.getY(), toleranceX, toleranceY);
+					this.nextUsingReduce(start, end, new ArrayList());
+					if (paths.size() != 0) {
+						return paths;
+					}
+				}
 			}
 
+			next(start, end, new ArrayList());
 		}
 
 		return paths;
-
 	}
 
-	private void next(int startX, int startY, int endX, int endY,
-			List<ICell> path,boolean xDirection,boolean yDirection) {
-		ICell root = getCell(startX, startY);
+	public void next(ICell start, ICell end, List<ICell> path) {
 
-		for (ICell n : getNeighbors(root, xDirection, yDirection)) {
-			if (path.contains(n)) {
-				continue;
-			} else {
-				if (n.getX() == endX && n.getY() == endY) {
-					List<ICell> pathClone = new ArrayList<ICell>(path);
+		if (this.paths.size() >= this.maxPaths) {
+			return;
+		}
 
+		List<ICell> copy = new ArrayList<ICell>(path);
 
-					this.paths.add(pathClone);
+		if (start.getPathPosX() == PathType.OPEN) {
+			for (ICell cell : this.cellsCanBeUsed) {
+				if (cell.getX() == start.getX() + 1
+						&& cell.getY() == start.getY()) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
+					}
+				}
+			}
 
-				} else {
-					List<ICell> pathClone = new ArrayList<ICell>(path);
-					pathClone.add(n);
-					next(n.getX(), n.getY(), endX, endY, pathClone, xDirection, yDirection);
+		}
+		if (start.getPathPosY() == PathType.OPEN) {
+			for (ICell cell : this.cellsCanBeUsed) {
+				if (cell.getX() == start.getX()
+						&& cell.getY() == start.getY() + 1) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
+					}
+				}
+			}
+		}
+		if (start.getPathNegX() == PathType.OPEN) {
+			for (ICell cell : this.cellsCanBeUsed) {
+				if (cell.getX() == start.getX() - 1
+						&& cell.getY() == start.getY()) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
+					}
+				}
+			}
+		}
+		if (start.getPathNegY() == PathType.OPEN) {
+			for (ICell cell : this.cellsCanBeUsed) {
+				if (cell.getX() == start.getX()
+						&& cell.getY() == start.getY() - 1) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
+					}
 				}
 			}
 		}
 	}
 
-	private List<ICell> getNeighbors(ICell current, boolean xDirection,
-			boolean yDirection) {
-		List<ICell> neighbors = new ArrayList<ICell>();
+	public void nextUsingReduce(ICell start, ICell end, List<ICell> path) {
 
-		for (ICell cell : this.completedCells) {
-			if (!cell.equals(current)) {
-				if (xDirection && yDirection) {
-					if (cell.getY() == current.getY() + 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() + 1) {
-						neighbors.add(cell);
-					}
-					
-					if (neighbors.size() == 0){
-						if (cell.getY() == current.getY()
-								&& cell.getX() == current.getX() - 1) {
-							neighbors.add(cell);
-						}
-						if (cell.getY() == current.getY() - 1
-								&& cell.getX() == current.getX()) {
-							neighbors.add(cell);
-						}
+		List<ICell> copy = new ArrayList<ICell>(path);
+
+		if (start.getPathPosX() == PathType.OPEN) {
+			for (ICell cell : this.reducedCells) {
+				if (cell.getX() == start.getX() + 1
+						&& cell.getY() == start.getY()) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
 					}
 				}
+			}
 
-				else if (xDirection && !yDirection) {
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() + 1) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY() - 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
-					}
-					
-					if (neighbors.size() == 0){
-						if (cell.getY() == current.getY()
-								&& cell.getX() == current.getX() + 1) {
-							neighbors.add(cell);
-						}
-						if (cell.getY() == current.getY() - 1
-								&& cell.getX() == current.getX()) {
-							neighbors.add(cell);
-						}
-					}
-				}
-
-				else if (!xDirection && yDirection) {
-					if (cell.getY() == current.getY() + 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() - 1) {
-						neighbors.add(cell);
-					}
-					
-					if (neighbors.size() == 0){
-						if (cell.getY() == current.getY()
-								&& cell.getX() == current.getX() + 1) {
-							neighbors.add(cell);
-						}
-						if (cell.getY() == current.getY() - 1
-								&& cell.getX() == current.getX()) {
-							neighbors.add(cell);
-						}
-					}
-					
-				} else {
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() - 1) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY() - 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
-					}
-					if (neighbors.size() == 0){
-						if (cell.getY() == current.getY()
-								&& cell.getX() == current.getX() + 1) {
-							neighbors.add(cell);
-						}
-						if (cell.getY() == current.getY() + 1
-								&& cell.getX() == current.getX()) {
-							neighbors.add(cell);
-						}
+		}
+		if (start.getPathPosY() == PathType.OPEN) {
+			for (ICell cell : this.reducedCells) {
+				if (cell.getX() == start.getX()
+						&& cell.getY() == start.getY() + 1) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
 					}
 				}
 			}
 		}
-
-		return neighbors;
-	}
-
-	private void nextUsingReduce(int startX, int startY, int endX, int endY,
-			List<ICell> path, boolean xDirection, boolean yDirection) {
-		ICell root = getCell(startX, startY);
-		for (ICell n : getNeighborsUsingReduce(root, xDirection, yDirection)) {
-			if (path.contains(n)) {
-				continue;
-			} else {
-				if (n.getX() == endX && n.getY() == endY) {
-					List<ICell> pathClone = new ArrayList<ICell>(path);
-					pathClone.add(n);
-					this.paths.add(pathClone);
-				} else {
-					List<ICell> pathClone = new ArrayList<ICell>(path);
-					pathClone.add(n);
-					nextUsingReduce(n.getX(), n.getY(), endX, endY, pathClone,
-							xDirection, yDirection);
-				}
-			}
-		}
-	}
-
-	private List<ICell> getNeighborsUsingReduce(ICell current,
-			boolean xDirection, boolean yDirection) {
-		List<ICell> neighbors = new ArrayList<ICell>();
-
-		for (ICell cell : this.reducedCells) {
-			if (!cell.equals(current)) {
-				if (xDirection && yDirection) {
-					if (cell.getY() == current.getY() + 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() + 1) {
-						neighbors.add(cell);
-					}
-				}
-
-				else if (xDirection && !yDirection) {
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() + 1) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY() - 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
-					}
-				}
-
-				else if (!xDirection && yDirection) {
-					if (cell.getY() == current.getY() + 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() - 1) {
-						neighbors.add(cell);
-					}
-				} else {
-					if (cell.getY() == current.getY()
-							&& cell.getX() == current.getX() - 1) {
-						neighbors.add(cell);
-					}
-					if (cell.getY() == current.getY() - 1
-							&& cell.getX() == current.getX()) {
-						neighbors.add(cell);
+		if (start.getPathNegX() == PathType.OPEN) {
+			for (ICell cell : this.reducedCells) {
+				if (cell.getX() == start.getX() - 1
+						&& cell.getY() == start.getY()) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
 					}
 				}
 			}
 		}
-
-		return neighbors;
-	}
-
-	private ICell getCell(int x, int y) {
-		for (ICell c : completedCells) {
-			if (c.getX() == x && c.getY() == y) {
-				return c;
+		if (start.getPathNegY() == PathType.OPEN) {
+			for (ICell cell : this.reducedCells) {
+				if (cell.getX() == start.getX()
+						&& cell.getY() == start.getY() - 1) {
+					if (cell.equals(end)) {
+						copy.remove(0);
+						copy.add(cell);
+						this.paths.add(copy);
+					} else if (!copy.contains(cell)) {
+						copy.add(cell);
+						next(cell, end, copy);
+					}
+				}
 			}
 		}
-		return null;
 	}
 
 	private void reduceCells(int startX, int startY, int endX, int endY,
-			int tolerance) {
-		this.reducedCells = new ArrayList<ICell>(this.completedCells);
+			int toleranceX, int toleranceY) {
+		this.reducedCells = new ArrayList<ICell>(this.cellsCanBeUsed);
 
 		if (startX >= endX) {
 			// end
@@ -292,10 +218,10 @@ public class PathFinder {
 
 				for (int i = 0; i < this.reducedCells.size(); i++) {
 					ICell c = reducedCells.get(i);
-					if (c.getX() > startX + tolerance
-							|| c.getX() < endX - tolerance
-							|| c.getY() > startY + tolerance
-							|| c.getY() < endY - tolerance) {
+					if (c.getX() > startX + toleranceX
+							|| c.getX() < endX - toleranceX
+							|| c.getY() > startY + toleranceY
+							|| c.getY() < endY - toleranceY) {
 						reducedCells.remove(i);
 						i--;
 					}
@@ -307,10 +233,10 @@ public class PathFinder {
 			else {
 				for (int i = 0; i < this.reducedCells.size(); i++) {
 					ICell c = reducedCells.get(i);
-					if (c.getX() > startX + tolerance
-							|| c.getX() < endX - tolerance
-							|| c.getY() > endY + tolerance
-							|| c.getY() < startY - tolerance) {
+					if (c.getX() > startX + toleranceX
+							|| c.getX() < endX - toleranceX
+							|| c.getY() > endY + toleranceY
+							|| c.getY() < startY - toleranceY) {
 						reducedCells.remove(i);
 						i--;
 					}
@@ -322,10 +248,10 @@ public class PathFinder {
 			if (startY >= endY) {
 				for (int i = 0; i < this.reducedCells.size(); i++) {
 					ICell c = reducedCells.get(i);
-					if (c.getX() > endX + tolerance
-							|| c.getX() < startX - tolerance
-							|| c.getY() > startY + tolerance
-							|| c.getY() < endY - tolerance) {
+					if (c.getX() > endX + toleranceX
+							|| c.getX() < startX - toleranceX
+							|| c.getY() > startY + toleranceY
+							|| c.getY() < endY - toleranceY) {
 						reducedCells.remove(i);
 						i--;
 					}
@@ -336,10 +262,10 @@ public class PathFinder {
 			else {
 				for (int i = 0; i < this.reducedCells.size(); i++) {
 					ICell c = reducedCells.get(i);
-					if (c.getX() < startX - tolerance
-							|| c.getX() > endX + tolerance
-							|| c.getY() > endY + tolerance
-							|| c.getY() < startY - tolerance) {
+					if (c.getX() < startX - toleranceX
+							|| c.getX() > endX + toleranceX
+							|| c.getY() > endY + toleranceY
+							|| c.getY() < startY - toleranceY) {
 						reducedCells.remove(i);
 						i--;
 					}

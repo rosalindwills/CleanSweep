@@ -18,7 +18,7 @@ public class StartVacuum {
         try {
             sim = SensorSimulator.getInstance();
             sim.importXml(SensorSimulator.HOME_LAYOUT_FILE);
-            vacuum = Vacuum.getInstance(sim,0,0);
+            vacuum = Vacuum.getInstance(sim,1,0,0);
 
             //add logic to determine if vacuum is currently running.
             //if vacuum is not running, start it

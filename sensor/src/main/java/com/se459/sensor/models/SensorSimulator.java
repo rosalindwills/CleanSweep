@@ -1,7 +1,6 @@
 package com.se459.sensor.models;
 
 import com.se459.sensor.interfaces.ICell;
-import com.se459.sensor.interfaces.IDetect;
 import com.se459.sensor.interfaces.IHomeLayout;
 import com.se459.sensor.interfaces.ISensor;
 import java.io.FileReader;
@@ -14,30 +13,32 @@ import java.io.File;
 
 import com.se459.sensor.enums.PathType;
 
-public class SensorSimulator implements ISensor, IDetect {
- 
-       static final public String HOME_LAYOUT_FILE = "sensor/src"+ File.separator + "main"+ File.separator + "resources" + File.separator +"homeLayout1.xml";
+public class SensorSimulator implements ISensor {
+
+	static final public String HOME_LAYOUT_FILE = "sensor/src" + File.separator
+			+ "main" + File.separator + "resources" + File.separator
+			+ "homeLayout1.xml";
 
 	private IHomeLayout _homeLayout;
 
-        static public ISensor getInstance(){
-            return new SensorSimulator(); 
-        }
+	static public ISensor getInstance() {
+		return new SensorSimulator();
+	}
 
-        private SensorSimulator(){
+	private SensorSimulator() {
 
-        }
-       
+	}
+
 	public IHomeLayout getHomeLayout() {
 		return _homeLayout;
 	}
-	
-	public ICell readCell(int floorLevel, int x, int y) {
+
+	private ICell readCell(int floorLevel, int x, int y) {
 		ICell cell = _homeLayout.getCell(floorLevel, x, y);
 		return cell;
 	}
 
-	public void cleanCell(int floorLevel, int x, int y) {
+	private void cleanCell(int floorLevel, int x, int y) {
 		_homeLayout.cleanCell(floorLevel, x, y);
 	}
 
@@ -46,61 +47,94 @@ public class SensorSimulator implements ISensor, IDetect {
 		HomeLayoutParser handler = new HomeLayoutParser();
 		xr.setContentHandler(handler);
 		xr.setErrorHandler(handler);
-	    FileReader r = new FileReader(path);
-	    xr.parse(new InputSource(r));
-	    _homeLayout = handler.getHomeLayout();
+		FileReader r = new FileReader(path);
+		xr.parse(new InputSource(r));
+		_homeLayout = handler.getHomeLayout();
 	}
-	
-	/** Specify a point and floor, this method returns the PathType 
-	 * in the positive x direction of that point on that floor. 
+
+	/**
+	 * Specify a point and floor, this method returns the PathType in the
+	 * positive x direction of that point on that floor.
 	 * 
-	 * @param floorLevel			the floor level
-	 * @param x			x coordinate
-	 * @param y			y coordinate
+	 * @param floorLevel
+	 *            the floor level
+	 * @param x
+	 *            x coordinate
+	 * @param y
+	 *            y coordinate
 	 * @return the PathType in positive x direction
 	 */
 	public PathType getPosXPathType(int floorLevel, int x, int y) {
 		return this.readCell(floorLevel, x, y).getPathPosX();
 	}
 
-	
-	/** Specify a point and floor, this method returns the PathType 
-	 * in the negative x direction of that point on that floor. 
+	/**
+	 * Specify a point and floor, this method returns the PathType in the
+	 * negative x direction of that point on that floor.
 	 * 
-	 * @param floorLevel			the floor level
-	 * @param x			x coordinate
-	 * @param y			y coordinate
+	 * @param floorLevel
+	 *            the floor level
+	 * @param x
+	 *            x coordinate
+	 * @param y
+	 *            y coordinate
 	 * @return the PathType in negative x direction
 	 */
 	public PathType getNegXPathType(int floorLevel, int x, int y) {
 		return this.readCell(floorLevel, x, y).getPathNegX();
 	}
 
-	/** Specify a point and floor, this method returns the PathType 
-	 * in the positive y direction of that point on that floor. 
+	/**
+	 * Specify a point and floor, this method returns the PathType in the
+	 * positive y direction of that point on that floor.
 	 * 
-	 * @param floorLevel			the floor level
-	 * @param x			x coordinate
-	 * @param y			y coordinate
+	 * @param floorLevel
+	 *            the floor level
+	 * @param x
+	 *            x coordinate
+	 * @param y
+	 *            y coordinate
 	 * @return the PathType in positive y direction
 	 */
 	public PathType getPosYPathType(int floorLevel, int x, int y) {
 		return this.readCell(floorLevel, x, y).getPathPosY();
 	}
 
-	
-	/** Specify a point and floor, this method returns the PathType 
-	 * in the negative y direction of that point on that floor. 
+	/**
+	 * Specify a point and floor, this method returns the PathType in the
+	 * negative y direction of that point on that floor.
 	 * 
-	 * @param floorLevel			the floor level
-	 * @param x			x coordinate
-	 * @param y			y coordinate
+	 * @param floorLevel
+	 *            the floor level
+	 * @param x
+	 *            x coordinate
+	 * @param y
+	 *            y coordinate
 	 * @return the PathType in negative y direction
 	 */
 	public PathType getNegYPathType(int floorLevel, int x, int y) {
 		return this.readCell(floorLevel, x, y).getPathNegY();
 	}
-
 	
+	
+	public ICell getPosXCell(int floorLevel, int x, int y){
+		return this.readCell(floorLevel, x+1, y);
+	}
+
+	public ICell getNegXCell(int floorLevel, int x, int y){
+		return this.readCell(floorLevel, x-1, y);
+	}
+
+	public ICell getPosYCell(int floorLevel, int x, int y){
+		return this.readCell(floorLevel, x, y+1);
+	}
+
+	public ICell getNegYCell(int floorLevel, int x, int y){
+		return this.readCell(floorLevel, x, y-1);
+	}
+	
+	public ICell getStartPoint(int floorLevel){
+		return this.readCell(floorLevel, 0, 0);
+	}
 
 }

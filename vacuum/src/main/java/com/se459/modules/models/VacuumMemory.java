@@ -1,98 +1,121 @@
 package com.se459.modules.models;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.se459.sensor.interfaces.ICell;
+import com.se459.util.log.LogFactory;
 
 public class VacuumMemory {
 
-	public ArrayList<ICell> knownCells = new ArrayList<ICell>();
-    public ArrayList<ICell> knownDirtyCells = new ArrayList<ICell>();
-    public ArrayList<Obstacle> knownObstacles = new ArrayList<Obstacle>();
-    
-    void AddCell(ICell cell)
-    {
-    	if(!knownCells.contains(cell))
-    	{
-    		knownCells.add(cell);
-    	}
-    }
-    
-    void AddObstacle(Obstacle obstacle)
-    {
-    	if(!knownObstacles.contains(obstacle))
-    	{
-    		knownObstacles.add(obstacle);
-    	}
-    }
-    
-    void AddDirtyCell(ICell cell)
-    {
-    	if(!knownDirtyCells.contains(cell))
-    	{
-    		knownDirtyCells.remove(cell);
-    	}
-    }
-    
-    void RemoveDirtyCell(ICell cell)
-    {
-    	if(knownDirtyCells.contains(cell))
-    	{
-    		knownDirtyCells.remove(cell);
-    	}
-    }
-	
-    boolean CellHasKnownNeighbor(int x, int y)
-	{
-		return null != GetKnownCellAtPoint(x + 1, y) || null != GetKnownCellAtPoint(x - 1, y) || null != GetKnownCellAtPoint(x, y + 1) || null != GetKnownCellAtPoint(x, y - 1);
+	private ArrayList<ICell> traveledFinishedCells = new ArrayList<ICell>();
+	private ArrayList<ICell> traveledUnfinishedCells = new ArrayList<ICell>();
+	private ArrayList<ICell> untraveledCells = new ArrayList<ICell>();
+
+	public void addNewCell(ICell cell) {
+		if (!untraveledCells.contains(cell)
+				&& !traveledFinishedCells.contains(cell)
+				&& !traveledUnfinishedCells.contains(cell)) {
+			untraveledCells.add(cell);
+		}
 	}
-	
-	ICell GetKnownCellAtPoint(int x, int y)
-	{
-		for(int i = 0; i < knownCells.size(); ++i)
-		{
-			ICell cell = knownCells.get(i);
-			if(cell.getX() == x && cell.getY() == y)
-			{
-				return cell;
+
+	public void becomeTraveled(ICell cell) {
+		if (untraveledCells.contains(cell)) {
+			untraveledCells.remove(cell);
+			traveledUnfinishedCells.add(cell);
+		}
+	}
+
+	public void becomeFinished(ICell cell) {
+		if (this.traveledUnfinishedCells.contains(cell)) {
+			traveledUnfinishedCells.remove(cell);
+			traveledFinishedCells.add(cell);
+		}
+
+	}
+
+	public void addFinishedCells(ICell cell) {
+		if(!this.traveledFinishedCells.contains(cell))
+		traveledFinishedCells.add(cell);
+	}
+
+	public boolean ifKnownButUnfinished(ICell cell) {
+		return traveledUnfinishedCells.contains(cell)
+				|| untraveledCells.contains(cell);
+	}
+
+	public void setFinished(ICell cell) {
+		traveledUnfinishedCells.remove(cell);
+		traveledFinishedCells.add(cell);
+	}
+
+	public List<ICell> getAllKnownButNotTraveldCells() {
+		return this.untraveledCells;
+	}
+
+	public List<ICell> getAllKnownCells() {
+		List<ICell> cells = new ArrayList<ICell>();
+		for (ICell c : traveledFinishedCells) {
+			if (!cells.contains(c)) {
+				cells.add(c);
 			}
 		}
-		
-		return null;
-	}
-	
-	Obstacle GetKnownObstacleAtPoint(int x, int y)
-	{
-		for(int i = 0; i < knownObstacles.size(); ++i)
-		{
-			Obstacle obstacle = knownObstacles.get(i);
-			if(obstacle.GetX() == x && obstacle.GetY() == y)
-			{
-				return obstacle;
+		for (ICell c : traveledUnfinishedCells) {
+			if (!cells.contains(c)) {
+				cells.add(c);
 			}
 		}
-		
-		return null;
-	}
-	
-	ICell FindChargingCell()
-	{
-		for(int i = 0; i < knownCells.size(); ++i)
-		{
-			if(knownCells.get(i).getIsChargingStation())
-			{
-				return knownCells.get(i);
+		for (ICell c : untraveledCells) {
+			if (!cells.contains(c)) {
+				cells.add(c);
 			}
 		}
-		
-		// scnLog.append("Could not find charging station in list of known cells.");
-		return null;
+		return cells;
 	}
-	
-	boolean CellIsUnkownAndHasKnownNeighbor(int x, int y)
-	{
-		return null == GetKnownCellAtPoint(x, y) && 
-				null == GetKnownObstacleAtPoint(x, y) && 
-				CellHasKnownNeighbor(x, y);
+
+	public void output() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				boolean flag = false;
+				;
+				for (int k = 0; k < traveledFinishedCells.size(); k++) {
+					if (traveledFinishedCells.get(k).getX() == j
+							&& traveledFinishedCells.get(k).getY() == i) {
+						sb.append("Fin");
+						flag = true;
+						break;
+					}
+				}
+				for (int k = 0; k < traveledUnfinishedCells.size(); k++) {
+					if (traveledUnfinishedCells.get(k).getX() == j
+							&& traveledUnfinishedCells.get(k).getY() == i) {
+						sb.append("Unf");
+						flag = true;
+						break;
+					}
+				}
+				for (int k = 0; k < untraveledCells.size(); k++) {
+					if (untraveledCells.get(k).getX() == j
+							&& untraveledCells.get(k).getY() == i) {
+						sb.append("Knw");
+						flag = true;
+						break;
+					}
+				}
+				if (!flag) {
+					sb.append("Unk");
+				}
+				sb.append("   ");
+			}
+			sb.append("\n");
+		}
+
+		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(
+				sb.toString());
+		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(
+				"---------------------------\n");
 	}
+
 }
