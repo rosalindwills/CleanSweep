@@ -115,11 +115,10 @@ public class NavigationLogic {
 
 	private void findPathToNextKnownCell() {
 
-		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append("In");
+
 		List<List<ICell>> allPossiblePath = new ArrayList<List<ICell>>();
 		PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
-		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(
-				this.memory.getAllKnownCells().size() + "");
+		
 
 		ICell closet = this.getCloset(this.currentPosition);
 		allPossiblePath.addAll(pf.findAllPath(this.currentPosition, closet));

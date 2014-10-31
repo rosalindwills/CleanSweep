@@ -112,9 +112,9 @@ public class VacuumMemory {
 			sb.append("\n");
 		}
 
-		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(
+		LogFactory.newFileLog().append(
 				sb.toString());
-		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(
+		LogFactory.newFileLog().append(
 				"---------------------------\n");
 	}
 
