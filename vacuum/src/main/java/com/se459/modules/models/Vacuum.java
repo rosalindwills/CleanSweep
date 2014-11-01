@@ -20,7 +20,7 @@ public class Vacuum implements Runnable {
 	private VacuumMemory memory;
 	private NavigationLogic navLogic;
 
-	public volatile boolean on;
+	public volatile boolean on = false;
 
 	Log log = LogFactory.newFileLog();
 	Log scnLog = LogFactory.newScreenLog();
@@ -55,6 +55,7 @@ public class Vacuum implements Runnable {
 	}
 
 	public void Start() {
+		
 		on = true;
 
 		thread = new Thread(this);
@@ -78,6 +79,8 @@ public class Vacuum implements Runnable {
 	}
 
 	public void run() {
+		
+		
 		memory.output();
 		this.current = navLogic.readCurrentCell();
 		memory.addNewCell(current);
@@ -100,111 +103,6 @@ public class Vacuum implements Runnable {
 		}
 	}
 
-	private void travelAlonePath() {
-
-	}
-
-	private boolean CheckIfFinishedCleaning() {
-		// @TODO add logic to check this
-		if (false) {
-			scnLog.append("Finished cleaning.");
-			return true;
-		}
-		return false;
-	}
-
-	// private boolean CheckIfOutOfPower() {
-	//
-	// ICell currentCell = sim.readCell(1, navLogic.currentPosition.x,
-	// navLogic.currentPosition.y);
-	//
-	// List<ICell> cells = new ArrayList<ICell>(this.memory.knownCells);
-	// if(!cells.contains(currentCell)){
-	// cells.add(currentCell);
-	// }
-	//
-	// PathFinder finder = new PathFinder(cells);
-	//
-	// List<List<ICell>> paths = finder.findAllPath(currentCell.getX(),
-	// currentCell.getY(),
-	// this.memory.FindChargingCell().getX(),this.memory.FindChargingCell().getY());
-	// this.currentReturnPathNum = paths.size();
-	//
-	// if (paths.size() == 0){
-	// return false;
-	// }
-	//
-	// log.append("Paths found: " +paths.size());
-	//
-	// int minimumChargeCost = Integer.MAX_VALUE;
-	// int minimumChargeCostPathNum = 0;
-	//
-	// for(int i =0; i < paths.size(); i++){
-	// int pathChargeCost = 0;
-	// List<ICell> path = paths.get(i);
-	// for (ICell cell : path){
-	// if(!(cell.getX() == navLogic.currentPosition.x && cell.getY() ==
-	// navLogic.currentPosition.y)){
-	// if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
-	// pathChargeCost += 1;
-	// } else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
-	// pathChargeCost += 2;
-	// } else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
-	// pathChargeCost += 3;
-	// }
-	// }
-	//
-	// if (pathChargeCost >= minimumChargeCost){
-	// break;
-	// }
-	// }
-	// if (pathChargeCost < minimumChargeCost){
-	// minimumChargeCost = pathChargeCost;
-	// minimumChargeCostPathNum = i;
-	// }
-	// }
-	//
-	// returnCost = minimumChargeCost;
-	//
-	// /*
-	// * THIS IS THE RETURN PATH
-	// *
-	// */
-	// returnPath = paths.get(minimumChargeCostPathNum);
-	//
-	// return this.chargeRemaining <= minimumChargeCost;
-	//
-	//
-	// }
-	//
-	// private boolean CheckIfFullOfDirt() {
-	// if (dirtUnits >= dirtCapacity) {
-	// scnLog.append("Dirt capacity reached." + getStatus());
-	// return true;
-	// }
-	// return false;
-	// }
-	//
-	// private void processReturnToChargingStation() {
-	// scnLog.append("Recharging to full capacity." + getStatus());
-	// chargeRemaining = chargeCapacity;
-	// if (dirtUnits >= dirtCapacity) {
-	// // scnLog.append("Press any key to empty dirt.");
-	// //try
-	// {
-	// //System.in.read();
-	// EmptyDirt();
-	// Charge();
-	// } // catch (Exception e) {}
-	// }
-	// }
-	//
-	// private void EmptyDirt()
-	// {
-	// scnLog.append("Emptying dirt.");
-	// dirtUnits = 0;
-	// }
-	//
 	private void Sweep(ICell cell) {
 		if (dirtUnits < dirtCapacity) {
 
@@ -224,29 +122,6 @@ public class Vacuum implements Runnable {
 			}
 		}
 	}
-
-	//
-	// private void Charge()
-	// {
-	// chargeRemaining = chargeCapacity;
-	// }
-
-	// pick the next destination for the vacuum to go to
-	// private void SetNextDestination()
-	// {
-	// if(CheckIfOutOfPower())
-	// {
-	// navLogic.SetDestinationToBaseStation();
-	// }
-	// else if(dirtUnits == dirtCapacity)
-	// {
-	// navLogic.SetDestinationToBaseStation();
-	// }
-	// else
-	// {
-	// navLogic.SetPathToDirtyOrUnknown();
-	// }
-	// }
 
 	public int GetX() {
 		return this.current.getX();

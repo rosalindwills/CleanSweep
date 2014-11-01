@@ -44,7 +44,7 @@ public class PathFinder {
 	private List<ICell> reducedCells = new ArrayList<ICell>();
 	private List<List<ICell>> paths = new ArrayList<List<ICell>>();
 
-	private int maxPaths = 50000;
+	private int maxPaths = 10000;
 
 	public PathFinder(List<ICell> cells) {
 		this.cellsCanBeUsed = new ArrayList<ICell>(cells);

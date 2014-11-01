@@ -8,65 +8,55 @@ import com.se459.util.log.LogFactory;
 
 public class VacuumMemory {
 
-	private ArrayList<ICell> traveledFinishedCells = new ArrayList<ICell>();
-	private ArrayList<ICell> traveledUnfinishedCells = new ArrayList<ICell>();
-	private ArrayList<ICell> untraveledCells = new ArrayList<ICell>();
+	private ArrayList<ICell> finishedCells = new ArrayList<ICell>();
+	private ArrayList<ICell> unfinishedCells = new ArrayList<ICell>();
+	
+	public static final int UNKNOWN = 0;
+	public static final int  UNFINISHED = 1;
+	public static final int FINISHED =2;
 
 	public void addNewCell(ICell cell) {
-		if (!untraveledCells.contains(cell)
-				&& !traveledFinishedCells.contains(cell)
-				&& !traveledUnfinishedCells.contains(cell)) {
-			untraveledCells.add(cell);
+		if (!unfinishedCells.contains(cell)
+				&& !finishedCells.contains(cell)) {
+				
+			unfinishedCells.add(cell);
 		}
 	}
-
-	public void becomeTraveled(ICell cell) {
-		if (untraveledCells.contains(cell)) {
-			untraveledCells.remove(cell);
-			traveledUnfinishedCells.add(cell);
-		}
+	
+	public boolean ifUnfinished(ICell cell){
+		return !finishedCells.contains(cell);
 	}
 
 	public void becomeFinished(ICell cell) {
-		if (this.traveledUnfinishedCells.contains(cell)) {
-			traveledUnfinishedCells.remove(cell);
-			traveledFinishedCells.add(cell);
+		if (this.unfinishedCells.contains(cell)) {
+			unfinishedCells.remove(cell);
+			finishedCells.add(cell);
 		}
 
 	}
 
 	public void addFinishedCells(ICell cell) {
-		if(!this.traveledFinishedCells.contains(cell))
-		traveledFinishedCells.add(cell);
-	}
-
-	public boolean ifKnownButUnfinished(ICell cell) {
-		return traveledUnfinishedCells.contains(cell)
-				|| untraveledCells.contains(cell);
+		if(!this.finishedCells.contains(cell))
+		finishedCells.add(cell);
 	}
 
 	public void setFinished(ICell cell) {
-		traveledUnfinishedCells.remove(cell);
-		traveledFinishedCells.add(cell);
+		unfinishedCells.remove(cell);
+		finishedCells.add(cell);
 	}
 
 	public List<ICell> getAllKnownButNotTraveldCells() {
-		return this.untraveledCells;
+		return this.unfinishedCells;
 	}
 
 	public List<ICell> getAllKnownCells() {
 		List<ICell> cells = new ArrayList<ICell>();
-		for (ICell c : traveledFinishedCells) {
+		for (ICell c : finishedCells) {
 			if (!cells.contains(c)) {
 				cells.add(c);
 			}
 		}
-		for (ICell c : traveledUnfinishedCells) {
-			if (!cells.contains(c)) {
-				cells.add(c);
-			}
-		}
-		for (ICell c : untraveledCells) {
+		for (ICell c : unfinishedCells) {
 			if (!cells.contains(c)) {
 				cells.add(c);
 			}
@@ -80,25 +70,17 @@ public class VacuumMemory {
 			for (int j = 0; j < 10; j++) {
 				boolean flag = false;
 				;
-				for (int k = 0; k < traveledFinishedCells.size(); k++) {
-					if (traveledFinishedCells.get(k).getX() == j
-							&& traveledFinishedCells.get(k).getY() == i) {
+				for (int k = 0; k < finishedCells.size(); k++) {
+					if (finishedCells.get(k).getX() == j
+							&& finishedCells.get(k).getY() == i) {
 						sb.append("Fin");
 						flag = true;
 						break;
 					}
 				}
-				for (int k = 0; k < traveledUnfinishedCells.size(); k++) {
-					if (traveledUnfinishedCells.get(k).getX() == j
-							&& traveledUnfinishedCells.get(k).getY() == i) {
-						sb.append("Unf");
-						flag = true;
-						break;
-					}
-				}
-				for (int k = 0; k < untraveledCells.size(); k++) {
-					if (untraveledCells.get(k).getX() == j
-							&& untraveledCells.get(k).getY() == i) {
+				for (int k = 0; k < unfinishedCells.size(); k++) {
+					if (unfinishedCells.get(k).getX() == j
+							&& unfinishedCells.get(k).getY() == i) {
 						sb.append("Knw");
 						flag = true;
 						break;
@@ -112,10 +94,11 @@ public class VacuumMemory {
 			sb.append("\n");
 		}
 
-		LogFactory.newFileLog().append(
-				sb.toString());
+		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(sb.toString());
 		LogFactory.newFileLog().append(
 				"---------------------------\n");
 	}
+	
+	
 
 }

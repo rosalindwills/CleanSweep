@@ -1,14 +1,15 @@
 package com.se459.modules.models;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 import com.se459.sensor.enums.PathType;
 import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Log;
-import com.se459.util.log.LogFactory;
 
 public class NavigationLogic {
 
@@ -43,7 +44,7 @@ public class NavigationLogic {
 
 				ICell c = sensor.getPosXCell(currentFloor,
 						currentPosition.getX(), currentPosition.getY());
-				if (this.memory.ifKnownButUnfinished(c)) {
+				if (this.memory.ifUnfinished(c)) {
 					return c;
 				}
 
@@ -53,7 +54,7 @@ public class NavigationLogic {
 
 				ICell c = sensor.getNegXCell(currentFloor,
 						currentPosition.getX(), currentPosition.getY());
-				if (this.memory.ifKnownButUnfinished(c)) {
+				if (this.memory.ifUnfinished(c)) {
 					return c;
 				}
 
@@ -63,7 +64,7 @@ public class NavigationLogic {
 
 				ICell c = sensor.getPosYCell(currentFloor,
 						currentPosition.getX(), currentPosition.getY());
-				if (this.memory.ifKnownButUnfinished(c)) {
+				if (this.memory.ifUnfinished(c)) {
 					return c;
 				}
 			}
@@ -72,7 +73,7 @@ public class NavigationLogic {
 
 				ICell c = sensor.getNegYCell(currentFloor,
 						currentPosition.getX(), currentPosition.getY());
-				if (this.memory.ifKnownButUnfinished(c)) {
+				if (this.memory.ifUnfinished(c)) {
 					return c;
 				}
 			}
@@ -89,15 +90,16 @@ public class NavigationLogic {
 	}
 
 	public void moveTo(ICell cell) {
-		memory.becomeTraveled(cell);
 		this.currentPosition = cell;
 		if (this.sensor.getPosXPathType(currentFloor, cell.getX(), cell.getY()) == PathType.OPEN) {
 			this.memory.addNewCell(this.sensor.getPosXCell(currentFloor,
 					cell.getX(), cell.getY()));
+
 		}
 		if (this.sensor.getPosYPathType(currentFloor, cell.getX(), cell.getY()) == PathType.OPEN) {
 			this.memory.addNewCell(this.sensor.getPosYCell(currentFloor,
 					cell.getX(), cell.getY()));
+
 		}
 		if (this.sensor.getNegXPathType(currentFloor, cell.getX(), cell.getY()) == PathType.OPEN) {
 			this.memory.addNewCell(this.sensor.getNegXCell(currentFloor,
@@ -115,13 +117,14 @@ public class NavigationLogic {
 
 	private void findPathToNextKnownCell() {
 
-
 		List<List<ICell>> allPossiblePath = new ArrayList<List<ICell>>();
 		PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
-		
 
-		ICell closet = this.getCloset(this.currentPosition);
-		allPossiblePath.addAll(pf.findAllPath(this.currentPosition, closet));
+		allPossiblePath.clear();
+		allPossiblePath.addAll(pf.findAllPath(
+						this.currentPosition,
+						this.memory.getAllKnownButNotTraveldCells().get(
+								this.memory.getAllKnownButNotTraveldCells().size()-1)));
 
 		int minimumCost = Integer.MAX_VALUE;
 		int minimumCostPathNum = 0;
@@ -151,25 +154,25 @@ public class NavigationLogic {
 
 		this.currentTravelingPath = allPossiblePath.get(minimumCostPathNum);
 	}
-
-	public ICell getCloset(ICell current){
-		int minDistance = Integer.MAX_VALUE;
-		int minIndex = 0;
-		for(int i =0; i<this.memory.getAllKnownButNotTraveldCells().size() ; i++){
-			ICell c = this.memory.getAllKnownButNotTraveldCells().get(i);
-			int distance = getDistance(current, c);
-			if(distance < minDistance){
-				minDistance = distance;
-				minIndex = i;
-			}
-		}
-		
-		return this.memory.getAllKnownButNotTraveldCells().get(minIndex);			
-		}
-
-	public int getDistance(ICell start, ICell end) {
-		return Math.abs(start.getX() - end.getX())
-				+ Math.abs(start.getY() - end.getY());
-	}
+//
+//	public ICell getCloset(ICell current) {
+//		int minDistance = Integer.MAX_VALUE;
+//		int minIndex = 0;
+//		for (int i = 0; i < this.memory.getAllKnownButNotTraveldCells().size(); i++) {
+//			ICell c = this.memory.getAllKnownButNotTraveldCells().get(i);
+//			int distance = getDistance(current, c);
+//			if (distance < minDistance) {
+//				minDistance = distance;
+//				minIndex = i;
+//			}
+//		}
+//
+//		return this.memory.getAllKnownButNotTraveldCells().get(minIndex);
+//	}
+//
+//	public int getDistance(ICell start, ICell end) {
+//		return Math.abs(start.getX() - end.getX())
+//				+ Math.abs(start.getY() - end.getY());
+//	}
 
 }
