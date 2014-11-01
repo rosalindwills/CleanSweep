@@ -6,7 +6,6 @@ import java.util.List;
 import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
-import com.se459.sensor.models.SensorSimulator;
 import com.se459.util.log.Log;
 import com.se459.util.log.LogFactory;
 
@@ -55,7 +54,7 @@ public class Vacuum implements Runnable {
 	}
 
 	public void Start() {
-		
+
 		on = true;
 
 		thread = new Thread(this);
@@ -79,8 +78,7 @@ public class Vacuum implements Runnable {
 	}
 
 	public void run() {
-		
-		
+
 		memory.output();
 		this.current = navLogic.readCurrentCell();
 		memory.addNewCell(current);
@@ -99,7 +97,6 @@ public class Vacuum implements Runnable {
 
 			this.next = this.navLogic.findNext();
 
-			
 		}
 	}
 
@@ -110,7 +107,7 @@ public class Vacuum implements Runnable {
 				cell.cleanCell();
 				sleep();
 			}
-			
+
 			memory.becomeFinished(current);
 
 			if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
@@ -151,12 +148,17 @@ public class Vacuum implements Runnable {
 	public int getChargeRemaining() {
 		return chargeRemaining;
 	}
-	
-	private void sleep(){
+
+	private void sleep() {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public VacuumMemory getMemory() {
+		return this.memory;
+
 	}
 }

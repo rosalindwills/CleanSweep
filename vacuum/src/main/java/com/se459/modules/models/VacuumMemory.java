@@ -63,6 +63,10 @@ public class VacuumMemory {
 		}
 		return cells;
 	}
+	
+	public List<ICell> getAllKnownAndFinishe() {
+		return this.finishedCells;
+	}
 
 	public void output() {
 		StringBuilder sb = new StringBuilder();
@@ -94,9 +98,6 @@ public class VacuumMemory {
 			sb.append("\n");
 		}
 
-		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(sb.toString());
-		LogFactory.newFileLog().append(
-				"---------------------------\n");
 	}
 	
 	

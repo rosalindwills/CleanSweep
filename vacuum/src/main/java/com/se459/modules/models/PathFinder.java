@@ -1,6 +1,7 @@
 package com.se459.modules.models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 /*
  class Cell{
@@ -35,6 +36,7 @@ import java.util.List;
  }
  }
  */
+import java.util.Map;
 
 import com.se459.sensor.enums.PathType;
 import com.se459.sensor.interfaces.ICell;
@@ -42,7 +44,6 @@ import com.se459.sensor.interfaces.ICell;
 public class PathFinder {
 	private List<ICell> cellsCanBeUsed = new ArrayList<ICell>();
 	private List<ICell> reducedCells = new ArrayList<ICell>();
-	private List<List<ICell>> paths = new ArrayList<List<ICell>>();
 
 	private int maxPaths = 10000;
 
@@ -50,162 +51,283 @@ public class PathFinder {
 		this.cellsCanBeUsed = new ArrayList<ICell>(cells);
 	}
 
-	public List<List<ICell>> findAllPath(ICell start, ICell end) {
-		if (!start.equals(end)) {
-			for (int toleranceX = 0; toleranceX <= 6; toleranceX++) {
-				for (int toleranceY = 0; toleranceY <= 6; toleranceY++) {
-					this.reduceCells(start.getX(), start.getY(), end.getX(),
-							end.getY(), toleranceX, toleranceY);
-					this.nextUsingReduce(start, end, new ArrayList());
-					if (paths.size() != 0) {
-						return paths;
+	public List<ICell> findPath(ICell start, ICell end) {
+
+		List<ICell> heads = new ArrayList<ICell>();
+		heads.add(start);
+
+		List<ICell> path = new ArrayList<ICell>();
+		path.add(start);
+
+		Map<ICell, List<ICell>> paths = new HashMap<ICell, List<ICell>>();
+
+		paths.put(start, path);
+
+		for (int i = 0; i < heads.size(); i++) {
+			ICell head = heads.get(i);
+			
+			if (head.getPathPosX() == PathType.OPEN) {
+				for (ICell cell : this.cellsCanBeUsed) {
+					if (cell.getX() == head.getX() + 1
+							&& cell.getY() == head.getY()) {
+						if (!paths.containsKey(cell)) {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							paths.put(cell, copy);
+							heads.add(cell);
+							if (cell.equals(end)) {
+								List<ICell> returnPath = paths.get(end);
+								returnPath.remove(start);
+								return returnPath;
+							}
+						}
+						break;
 					}
 				}
 			}
 
-			next(start, end, new ArrayList());
-		}
+			if (head.getPathPosY() == PathType.OPEN) {
+				for (ICell cell : this.cellsCanBeUsed) {
+					if (cell.getX() == head.getX()
+							&& cell.getY() == head.getY() + 1) {
+						if (!paths.containsKey(cell)) {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							paths.put(cell, copy);
+							heads.add(cell);
+							if (cell.equals(end)) {
+								List<ICell> returnPath = paths.get(end);
+								returnPath.remove(start);
+								return returnPath;
+							}
+						}
+						break;
+					}
+				}
+			}
 
-		return paths;
+			if (head.getPathNegX() == PathType.OPEN) {
+				for (ICell cell : this.cellsCanBeUsed) {
+					if (cell.getX() == head.getX() - 1
+							&& cell.getY() == head.getY()) {
+						if (!paths.containsKey(cell)) {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							paths.put(cell, copy);
+							heads.add(cell);
+							if (cell.equals(end)) {
+								List<ICell> returnPath = paths.get(end);
+								returnPath.remove(start);
+								return returnPath;
+							}
+						}
+						break;
+					}
+				}
+			}
+
+			if (head.getPathNegY() == PathType.OPEN) {
+				for (ICell cell : this.cellsCanBeUsed) {
+					if (cell.getX() == head.getX()
+							&& cell.getY() == head.getY() - 1) {
+						if (!paths.containsKey(cell)) {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							paths.put(cell, copy);
+							heads.add(cell);
+							if (cell.equals(end)) {
+								List<ICell> returnPath = paths.get(end);
+								returnPath.remove(start);
+								return returnPath;
+							}
+						}
+						break;
+					}
+				}
+			}
+
+			heads.remove(i);
+			i--;
+			// paths.remove(head);
+
+		}
+		
+		List<ICell> returnPath = paths.get(end);
+		returnPath.remove(start);
+		return returnPath;
+
+		
+
 	}
 
-	public void next(ICell start, ICell end, List<ICell> path) {
+	// Iterator<Map.Entry<ICell, List<ICell>>> it = paths.entrySet()
+	// .iterator();
+	// while (it.hasNext()) {
+	// Map.Entry<ICell, List<ICell>> pairs = (Map.Entry<ICell,
+	// List<ICell>>) it.next();
+	// ICell head = pairs.getKey();
+	// List<ICell> path = pairs.getValue();
+	//
+	// if(head.equals(end)){
+	//
+	// }
+	//
+	// it.remove(); // avoids a ConcurrentModificationException
+	// }
 
-		if (this.paths.size() >= this.maxPaths) {
-			return;
-		}
+	// }
 
-		List<ICell> copy = new ArrayList<ICell>(path);
+	// public void next(ICell start, ICell end, List<ICell> path, int maxDepth,
+	// int curDepth) {
+	//
+	// curDepth ++;
+	//
+	// if(curDepth > maxDepth){
+	// return;
+	// }
+	//
+	// ICell posX = null;
+	// ICell posY = null;
+	// ICell negX = null;
+	// ICell negY = null;
+	//
+	// List<ICell> copy = new ArrayList<ICell>(path);
+	//
+	// if (start.getPathPosX() == PathType.OPEN) {
+	// for (ICell cell : this.cellsCanBeUsed) {
+	// if (cell.getX() == start.getX() + 1
+	// && cell.getY() == start.getY()) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if (!copy.contains(cell) ) {
+	// posX = cell;
+	// }
+	// }
+	// }
+	//
+	// }
+	// if (start.getPathPosY() == PathType.OPEN) {
+	// for (ICell cell : this.cellsCanBeUsed) {
+	// if (cell.getX() == start.getX()
+	// && cell.getY() == start.getY() + 1) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if (!copy.contains(cell)) {
+	// posY = cell;
+	// }
+	// }
+	// }
+	// }
+	// if (start.getPathNegX() == PathType.OPEN) {
+	// for (ICell cell : this.cellsCanBeUsed) {
+	// if (cell.getX() == start.getX() - 1
+	// && cell.getY() == start.getY()) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if(!copy.contains(cell)) {
+	// negX = cell;
+	// }
+	// }
+	// }
+	// }
+	// if (start.getPathNegY() == PathType.OPEN) {
+	// for (ICell cell : this.cellsCanBeUsed) {
+	// if (cell.getX() == start.getX()
+	// && cell.getY() == start.getY() - 1) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if (!copy.contains(cell)) {
+	// negY = cell;
+	// }
+	// }
+	// }
+	// }
+	//
+	// if(posX != null){
+	// copy.add(posX);
+	// next(posX, end, copy, maxDepth, curDepth);
+	// copy.remove(posX)
+	// }
+	// }
 
-		if (start.getPathPosX() == PathType.OPEN) {
-			for (ICell cell : this.cellsCanBeUsed) {
-				if (cell.getX() == start.getX() + 1
-						&& cell.getY() == start.getY()) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-
-		}
-		if (start.getPathPosY() == PathType.OPEN) {
-			for (ICell cell : this.cellsCanBeUsed) {
-				if (cell.getX() == start.getX()
-						&& cell.getY() == start.getY() + 1) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-		}
-		if (start.getPathNegX() == PathType.OPEN) {
-			for (ICell cell : this.cellsCanBeUsed) {
-				if (cell.getX() == start.getX() - 1
-						&& cell.getY() == start.getY()) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-		}
-		if (start.getPathNegY() == PathType.OPEN) {
-			for (ICell cell : this.cellsCanBeUsed) {
-				if (cell.getX() == start.getX()
-						&& cell.getY() == start.getY() - 1) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-		}
-	}
-
-	public void nextUsingReduce(ICell start, ICell end, List<ICell> path) {
-
-		List<ICell> copy = new ArrayList<ICell>(path);
-
-		if (start.getPathPosX() == PathType.OPEN) {
-			for (ICell cell : this.reducedCells) {
-				if (cell.getX() == start.getX() + 1
-						&& cell.getY() == start.getY()) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-
-		}
-		if (start.getPathPosY() == PathType.OPEN) {
-			for (ICell cell : this.reducedCells) {
-				if (cell.getX() == start.getX()
-						&& cell.getY() == start.getY() + 1) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-		}
-		if (start.getPathNegX() == PathType.OPEN) {
-			for (ICell cell : this.reducedCells) {
-				if (cell.getX() == start.getX() - 1
-						&& cell.getY() == start.getY()) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-		}
-		if (start.getPathNegY() == PathType.OPEN) {
-			for (ICell cell : this.reducedCells) {
-				if (cell.getX() == start.getX()
-						&& cell.getY() == start.getY() - 1) {
-					if (cell.equals(end)) {
-						copy.remove(0);
-						copy.add(cell);
-						this.paths.add(copy);
-					} else if (!copy.contains(cell)) {
-						copy.add(cell);
-						next(cell, end, copy);
-					}
-				}
-			}
-		}
-	}
+	// public void nextUsingReduce(ICell start, ICell end, List<ICell> path) {
+	//
+	// List<ICell> copy = new ArrayList<ICell>(path);
+	//
+	// if (start.getPathPosX() == PathType.OPEN) {
+	// for (ICell cell : this.reducedCells) {
+	// if (cell.getX() == start.getX() + 1
+	// && cell.getY() == start.getY()) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if (!copy.contains(cell)) {
+	// copy.add(cell);
+	// next(cell, end, copy);
+	// }
+	// }
+	// }
+	//
+	// }
+	// if (start.getPathPosY() == PathType.OPEN) {
+	// for (ICell cell : this.reducedCells) {
+	// if (cell.getX() == start.getX()
+	// && cell.getY() == start.getY() + 1) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if (!copy.contains(cell)) {
+	// copy.add(cell);
+	// next(cell, end, copy);
+	// }
+	// }
+	// }
+	// }
+	// if (start.getPathNegX() == PathType.OPEN) {
+	// for (ICell cell : this.reducedCells) {
+	// if (cell.getX() == start.getX() - 1
+	// && cell.getY() == start.getY()) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if (!copy.contains(cell)) {
+	// copy.add(cell);
+	// next(cell, end, copy);
+	// }
+	// }
+	// }
+	// }
+	// if (start.getPathNegY() == PathType.OPEN) {
+	// for (ICell cell : this.reducedCells) {
+	// if (cell.getX() == start.getX()
+	// && cell.getY() == start.getY() - 1) {
+	// if (cell.equals(end)) {
+	// copy.remove(0);
+	// copy.add(cell);
+	// this.paths.add(copy);
+	// } else if (!copy.contains(cell)) {
+	// copy.add(cell);
+	// next(cell, end, copy);
+	// }
+	// }
+	// }
+	// }
+	// }
 
 	private void reduceCells(int startX, int startY, int endX, int endY,
 			int toleranceX, int toleranceY) {

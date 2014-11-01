@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
@@ -11,11 +12,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.xml.sax.SAXException;
 
@@ -27,8 +26,6 @@ import com.se459.sensor.interfaces.IFloor;
 import com.se459.sensor.interfaces.IHomeLayout;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.sensor.models.SensorSimulator;
-import com.se459.util.log.Log;
-import com.se459.util.log.LogFactory;
 import com.se459.util.log.MemoryLog;
 
 class HomeLayoutPanel extends JPanel {
@@ -54,13 +51,28 @@ class HomeLayoutPanel extends JPanel {
 				ICell cell = floor.getCell(x, y);
 
 				if (null != cell) {
+					// draw cells
 					g2d.setColor(getSurfaceColor(cell.getSurfaceType(),
 							cell.getDirtUnits()));
-
 					Rectangle2D rect = new Rectangle2D.Float(x * xMult, y
 							* yMult, xMult, yMult);
 					g2d.fill(rect);
+					if (vacuum.getMemory().getAllKnownButNotTraveldCells()
+							.contains(cell)) {
+						g2d.setStroke(new BasicStroke(2));
+						g2d.setColor(Color.black);
+						g2d.drawRect(x * xMult + xMult / 3, y * yMult + yMult
+								/ 3, xMult / 3, yMult / 3);
+					}
+					if (vacuum.getMemory().getAllKnownAndFinishe()
+							.contains(cell)) {
+						g2d.setStroke(new BasicStroke(2));
+						g2d.setColor(Color.gray);
+						g2d.fillRect(x * xMult + xMult / 3, y * yMult + yMult
+								/ 3, xMult / 3, yMult / 3);
+					}
 
+					// draw walls
 					g2d.setStroke(new BasicStroke(3));
 					g2d.setColor(Color.black);
 					if (cell.getPathNegX() != PathType.OPEN) {
@@ -82,8 +94,10 @@ class HomeLayoutPanel extends JPanel {
 								* yMult);
 					}
 
+					// draw charging station
 					if (cell.getIsChargingStation()) {
-						g2d.drawOval(x * xMult, y * yMult, xMult, yMult);
+						g2d.setColor(Color.lightGray);
+						g2d.fillOval(x * xMult, y * yMult, xMult, yMult);
 					}
 				}
 			}
@@ -98,12 +112,12 @@ class HomeLayoutPanel extends JPanel {
 				g2d.setColor(Color.green);
 				g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY()
 						* yMult + yMult / 4, xMult / 2, yMult / 2);
-			}else{
+			} else {
 				// draw the vacuum
 				g2d.setColor(Color.red);
 				g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY()
 						* yMult + yMult / 4, xMult / 2, yMult / 2);
-				
+
 			}
 		}
 
@@ -156,7 +170,7 @@ class HomeLayoutPanel extends JPanel {
 	}
 }
 
-public class HomeLayoutDrawer extends JFrame  {
+public class HomeLayoutDrawer extends JFrame {
 
 	ISensor sim = SensorSimulator.getInstance();
 	IHomeLayout layout;
@@ -183,37 +197,29 @@ public class HomeLayoutDrawer extends JFrame  {
 
 	public HomeLayoutDrawer() {
 		try {
-		
-			
+
 			((SensorSimulator) sim).importXml("classes" + File.separator
 					+ "homeLayout1.xml");
-			
-		
 
 			layout = ((SensorSimulator) sim).getHomeLayout();
 			vacuum = Vacuum.getInstance(sim, 1, 0, 0);
-		
+
 		} catch (SAXException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		
-	
-				
 		initUI();
-				
+
 		UpdateThread updateThread = new UpdateThread();
-		
+
 		new Thread(updateThread).start();
-		
+
 		vacuum.Start();
 
-		
 	}
 
 	private void initUI() {
-		
 
 		setTitle("CleanSweep");
 
@@ -222,7 +228,6 @@ public class HomeLayoutDrawer extends JFrame  {
 		int cols = layout.getFloor(1).getMaxY() - layout.getFloor(1).getMinY()
 				+ 1;
 
-		
 		// given a maximum size of window, call getCellSize to calculate
 		// a proper size for cell based on floor plan.
 		int actualCellSize = calculateCellSize(rows, cols, maximumWindowlWidth,
@@ -231,13 +236,11 @@ public class HomeLayoutDrawer extends JFrame  {
 		int actualLayoutPanelHeight = actualCellSize * cols;
 		setSize(actualLayoutPanelWidth + padding, actualLayoutPanelHeight
 				+ statusPanelHeight + padding);
-		
 
 		FlowLayout UILayout = new FlowLayout();
 		UILayout.setHgap(0);
 		UILayout.setVgap(0);
 		setLayout(UILayout);
-
 
 		statusPanel = new JPanel();
 		statusPanel.add(new JLabel("Initializing ..."));
@@ -255,7 +258,6 @@ public class HomeLayoutDrawer extends JFrame  {
 		setLocationRelativeTo(null);
 
 		this.setVisible(true);
-		
 
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
@@ -263,8 +265,6 @@ public class HomeLayoutDrawer extends JFrame  {
 				HomeLayoutDrawer.windowOpen = false;
 			}
 		});
-
-		LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append("ui done");
 
 	}
 
@@ -285,8 +285,6 @@ public class HomeLayoutDrawer extends JFrame  {
 
 		return null;
 	}
-
-	
 
 	private int calculateCellSize(int cols, int rows, int maximumWidth,
 			int maximumHeight, int maximumCellSize, int minimumCellSize) {
@@ -311,15 +309,14 @@ public class HomeLayoutDrawer extends JFrame  {
 		layoutPanel.print(g);
 		memoryLog.append(bi);
 	}
-	
-	class UpdateThread implements Runnable{
+
+	class UpdateThread implements Runnable {
 		public void run() {
 
 			while (windowOpen) {
-				LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(vacuum.on+"");
-			
+
 				if (layoutPanel.vacuum.on) {
-					LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt").append(vacuum.on+"");
+
 					statusPanel.removeAll();
 					String locationStr = "(" + layoutPanel.vacuum.GetX() + ", "
 							+ layoutPanel.vacuum.GetY() + ")";
@@ -341,7 +338,7 @@ public class HomeLayoutDrawer extends JFrame  {
 
 					try {
 						if (DEBUG_MODE) {
-					//		this.outputCurrentLayoutPanel();
+							// this.outputCurrentLayoutPanel();
 						}
 
 						Thread.sleep(Vacuum.delay);
@@ -351,13 +348,8 @@ public class HomeLayoutDrawer extends JFrame  {
 				}
 			}
 
-			try {
-				thread.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 		}
-		
+
 	}
 
 }

@@ -117,62 +117,15 @@ public class NavigationLogic {
 
 	private void findPathToNextKnownCell() {
 
-		List<List<ICell>> allPossiblePath = new ArrayList<List<ICell>>();
 		PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
 
-		allPossiblePath.clear();
-		allPossiblePath.addAll(pf.findAllPath(
+		this.currentTravelingPath = pf
+				.findPath(
 						this.currentPosition,
 						this.memory.getAllKnownButNotTraveldCells().get(
-								this.memory.getAllKnownButNotTraveldCells().size()-1)));
+								this.memory.getAllKnownButNotTraveldCells()
+										.size() - 1));
 
-		int minimumCost = Integer.MAX_VALUE;
-		int minimumCostPathNum = 0;
-		for (int i = 0; i < allPossiblePath.size(); i++) {
-			int pathChargeCost = 0;
-			List<ICell> path = allPossiblePath.get(i);
-			for (ICell cell : path) {
-				if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
-					pathChargeCost += 1;
-				} else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
-					pathChargeCost += 2;
-				} else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
-					pathChargeCost += 3;
-				}
-
-				if (pathChargeCost >= minimumCost) {
-					break;
-				}
-			}
-
-			if (pathChargeCost < minimumCost) {
-				minimumCost = pathChargeCost;
-				minimumCostPathNum = i;
-			}
-
-		}
-
-		this.currentTravelingPath = allPossiblePath.get(minimumCostPathNum);
 	}
-//
-//	public ICell getCloset(ICell current) {
-//		int minDistance = Integer.MAX_VALUE;
-//		int minIndex = 0;
-//		for (int i = 0; i < this.memory.getAllKnownButNotTraveldCells().size(); i++) {
-//			ICell c = this.memory.getAllKnownButNotTraveldCells().get(i);
-//			int distance = getDistance(current, c);
-//			if (distance < minDistance) {
-//				minDistance = distance;
-//				minIndex = i;
-//			}
-//		}
-//
-//		return this.memory.getAllKnownButNotTraveldCells().get(minIndex);
-//	}
-//
-//	public int getDistance(ICell start, ICell end) {
-//		return Math.abs(start.getX() - end.getX())
-//				+ Math.abs(start.getY() - end.getY());
-//	}
 
 }
