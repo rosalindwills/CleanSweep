@@ -24,6 +24,12 @@ public class NavigationLogic {
 
 	Log log;
 
+	private int returnCost = 0;
+
+	private List<ICell> returnPath = new ArrayList<ICell>();
+
+	private boolean isReturning;
+
 	public ICell readCurrentCell(int floor) {
 		return currentPosition;
 	}
@@ -34,6 +40,18 @@ public class NavigationLogic {
 		this.sensor = sensor;
 		this.log = log;
 		this.memory = vacuumMemory;
+	}
+
+	public ICell readCurrentCell() {
+		return currentPosition;
+	}
+
+	public List<ICell> getReturnPath() {
+		return this.returnPath;
+	}
+
+	public int getReturnCost() {
+		return this.returnCost;
 	}
 
 	public ICell findNext() {
@@ -80,7 +98,7 @@ public class NavigationLogic {
 
 			findPathToNextKnownCell();
 
-			return this.currentTravelingPath.remove(0);
+			return this.currentTravelingPath.get(0);
 
 		} else {
 			return this.currentTravelingPath.remove(0);
@@ -89,43 +107,98 @@ public class NavigationLogic {
 
 	}
 
-	public void moveTo(ICell cell) {
-		this.currentPosition = cell;
-		if (this.sensor.getPosXPathType(currentFloor, cell.getX(), cell.getY()) == PathType.OPEN) {
-			this.memory.addNewCell(this.sensor.getPosXCell(currentFloor,
-					cell.getX(), cell.getY()));
+	public void checkBattery(double remaining) {
 
-		}
-		if (this.sensor.getPosYPathType(currentFloor, cell.getX(), cell.getY()) == PathType.OPEN) {
-			this.memory.addNewCell(this.sensor.getPosYCell(currentFloor,
-					cell.getX(), cell.getY()));
+		// int nextMoveCost = 0;
+		//
+		// switch (this.currentPosition.getSurfaceType()) {
+		// case BAREFLOOR:
+		// nextMoveCost = 1;
+		// case LOWPILE:
+		// nextMoveCost = 2;
+		// case HIGHPILE:
+		// nextMoveCost = 3;
+		// }
+		//
+		// switch (this.findNext().getSurfaceType()) {
+		// case BAREFLOOR:
+		// nextMoveCost = 1;
+		// case LOWPILE:
+		// nextMoveCost = 2;
+		// case HIGHPILE:
+		// nextMoveCost = 3;
+		// }
+		//
+		// // if (calculateReturnCost(this.currentPosition)
+		// // > remaining) {
+		// // this.currentTravelingPath = this.returnPath;
+		// // }
 
-		}
-		if (this.sensor.getNegXPathType(currentFloor, cell.getX(), cell.getY()) == PathType.OPEN) {
-			this.memory.addNewCell(this.sensor.getNegXCell(currentFloor,
-					cell.getX(), cell.getY()));
-		}
-		if (this.sensor.getNegYPathType(currentFloor, cell.getX(), cell.getY()) == PathType.OPEN) {
-			this.memory.addNewCell(this.sensor.getNegYCell(currentFloor,
-					cell.getX(), cell.getY()));
-		}
 	}
 
-	public ICell readCurrentCell() {
-		return currentPosition;
+	public double moveTo(ICell next) {
+		double batteryUnitDrain = 0;
+		
+		 switch (this.currentPosition.getSurfaceType()) {
+		 case BAREFLOOR:
+		 batteryUnitDrain += 1;
+		 break;
+		 case LOWPILE:
+		 batteryUnitDrain += 2;
+		 break;
+		 case HIGHPILE:
+		 batteryUnitDrain += 3;
+		 break;
+		 }
+		
+		 switch (next.getSurfaceType()) {
+		 case BAREFLOOR:
+		 batteryUnitDrain += 1;
+		 break;
+		 case LOWPILE:
+		 batteryUnitDrain += 2;
+		 break;
+		 case HIGHPILE:
+		 batteryUnitDrain += 3;
+		 break;
+		 }
+		
+		 batteryUnitDrain = batteryUnitDrain / 2;
+
+		this.currentPosition = next;
+
+		if (this.sensor.getPosXPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+			this.memory.addNewCell(this.sensor.getPosXCell(currentFloor,
+					next.getX(), next.getY()));
+
+		}
+		if (this.sensor.getPosYPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+			this.memory.addNewCell(this.sensor.getPosYCell(currentFloor,
+					next.getX(), next.getY()));
+
+		}
+		if (this.sensor.getNegXPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+			this.memory.addNewCell(this.sensor.getNegXCell(currentFloor,
+					next.getX(), next.getY()));
+		}
+		if (this.sensor.getNegYPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+			this.memory.addNewCell(this.sensor.getNegYCell(currentFloor,
+					next.getX(), next.getY()));
+		}
+		if (!this.isReturning) {
+			// calculateReturnCost();
+		}
+
+		return batteryUnitDrain;
 	}
 
 	private void findPathToNextKnownCell() {
 
 		PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
 
-		this.currentTravelingPath = pf
-				.findPath(
-						this.currentPosition,
-						this.memory.getAllKnownButNotTraveldCells().get(
-								this.memory.getAllKnownButNotTraveldCells()
-										.size() - 1));
-
+		this.currentTravelingPath = pf.findPath(this.currentPosition,
+				this.memory.getAllKnownButNotTraveldCells());
+		this.currentTravelingPath.remove(0);
 	}
 
 }

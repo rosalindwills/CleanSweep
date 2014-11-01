@@ -64,7 +64,7 @@ class HomeLayoutPanel extends JPanel {
 						g2d.drawRect(x * xMult + xMult / 3, y * yMult + yMult
 								/ 3, xMult / 3, yMult / 3);
 					}
-					if (vacuum.getMemory().getAllKnownAndFinishe()
+					if (vacuum.getMemory().getAllKnownAndFinished()
 							.contains(cell)) {
 						g2d.setStroke(new BasicStroke(2));
 						g2d.setColor(Color.gray);
@@ -121,12 +121,12 @@ class HomeLayoutPanel extends JPanel {
 			}
 		}
 
-		// for (ICell c : vacuum.returnPath) {
-		// g2d.setColor(Color.red);
-		// g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY() * yMult
-		// + yMult * 4 / 10, xMult / 5, yMult / 5);
-		//
-		// }
+		for (ICell c : vacuum.getNavigationLogic().getReturnPath()) {
+			g2d.setColor(Color.red);
+			g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY() * yMult
+					+ yMult * 4 / 10, xMult / 5, yMult / 5);
+
+		}
 	}
 
 	private Color getSurfaceColor(SurfaceType type, int dirtUnits) {
@@ -318,18 +318,15 @@ public class HomeLayoutDrawer extends JFrame {
 				if (layoutPanel.vacuum.on) {
 
 					statusPanel.removeAll();
-					String locationStr = "(" + layoutPanel.vacuum.GetX() + ", "
-							+ layoutPanel.vacuum.GetY() + ")";
 					String dirtStatusStr = "DirtUnits: "
 							+ layoutPanel.vacuum.getDirtUnits();
 					String chargeStatusStr = "ChargeRemaining: "
 							+ layoutPanel.vacuum.getChargeRemaining();
-					String returnPathNum = "#ReturnPath: "
-							+ layoutPanel.vacuum.currentReturnPathNum;
 					String pathCost = "ReturnCost: "
-							+ layoutPanel.vacuum.returnCost;
+							+ layoutPanel.vacuum.getNavigationLogic()
+									.getReturnCost();
 					String dispaly = dirtStatusStr + "    " + chargeStatusStr
-							+ "    " + pathCost + "    " + returnPathNum;
+							+ "    " + pathCost;
 
 					statusPanel.add(new JLabel(dispaly));
 					statusPanel.validate();

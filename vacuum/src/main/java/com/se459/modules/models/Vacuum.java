@@ -18,6 +18,8 @@ public class Vacuum implements Runnable {
 
 	private VacuumMemory memory;
 	private NavigationLogic navLogic;
+	private ISensor sensor;
+	private int currentFloor;
 
 	public volatile boolean on = false;
 
@@ -25,15 +27,12 @@ public class Vacuum implements Runnable {
 	Log scnLog = LogFactory.newScreenLog();
 
 	private int dirtUnits;
-	final int dirtCapacity = 50;
+	final double dirtCapacity = 50;
 
-	int chargeRemaining;
-	final int chargeCapacity = 50;
+	double chargeRemaining;
+	final double chargeCapacity = 100;
 
-	// for testing, variables below should be removed finally.
-	public int currentReturnPathNum = 0;
-	public int returnCost = 0;
-	public List<ICell> returnPath = new ArrayList<ICell>();
+
 	// the thread the vacuum is running in
 	Thread thread;
 
@@ -46,6 +45,8 @@ public class Vacuum implements Runnable {
 			int yPosition) {
 		chargeRemaining = chargeCapacity;
 		dirtUnits = 0;
+		this.sensor = sensorSimulator;
+		this.currentFloor = floor;
 
 		scnLog.append("In vacuum constructor");
 
@@ -79,24 +80,25 @@ public class Vacuum implements Runnable {
 
 	public void run() {
 
-		memory.output();
 		this.current = navLogic.readCurrentCell();
 		memory.addNewCell(current);
 		this.navLogic.moveTo(current);
 		Sweep(current);
-		memory.output();
 		this.next = null;
 		while (on) {
 			if (next != null) {
-				this.navLogic.moveTo(this.next);
+				double batteryUnitDrain = this.navLogic.moveTo(this.next);
+				this.chargeRemaining -= batteryUnitDrain;
 				sleep();
 				this.current = this.navLogic.readCurrentCell();
+				if(this.current.equals(this.sensor.getStartPoint(this.currentFloor))){
+					this.chargeRemaining = this.chargeCapacity;
+				}
 				Sweep(current);
 				memory.output();
 			}
-
 			this.next = this.navLogic.findNext();
-
+			this.navLogic.checkBattery(this.chargeRemaining);
 		}
 	}
 
@@ -145,7 +147,7 @@ public class Vacuum implements Runnable {
 		return dirtUnits;
 	}
 
-	public int getChargeRemaining() {
+	public double getChargeRemaining() {
 		return chargeRemaining;
 	}
 
@@ -159,6 +161,9 @@ public class Vacuum implements Runnable {
 
 	public VacuumMemory getMemory() {
 		return this.memory;
-
+	}
+	
+	public NavigationLogic getNavigationLogic(){
+		return this.navLogic;
 	}
 }

@@ -51,7 +51,7 @@ public class PathFinder {
 		this.cellsCanBeUsed = new ArrayList<ICell>(cells);
 	}
 
-	public List<ICell> findPath(ICell start, ICell end) {
+	public List<ICell> findPath(ICell start, List<ICell> unfinishedCells) {
 
 		List<ICell> heads = new ArrayList<ICell>();
 		heads.add(start);
@@ -65,7 +65,7 @@ public class PathFinder {
 
 		for (int i = 0; i < heads.size(); i++) {
 			ICell head = heads.get(i);
-			
+
 			if (head.getPathPosX() == PathType.OPEN) {
 				for (ICell cell : this.cellsCanBeUsed) {
 					if (cell.getX() == head.getX() + 1
@@ -76,10 +76,16 @@ public class PathFinder {
 							copy.add(cell);
 							paths.put(cell, copy);
 							heads.add(cell);
-							if (cell.equals(end)) {
-								List<ICell> returnPath = paths.get(end);
-								returnPath.remove(start);
-								return returnPath;
+
+						} else {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							List<ICell> oldPath = paths.get(cell);
+							double oldPathCost = calculateCost(oldPath);
+							double newPathCost = calculateCost(newPath);
+							if (newPathCost < oldPathCost) {
+								paths.put(cell, copy);
 							}
 						}
 						break;
@@ -97,10 +103,16 @@ public class PathFinder {
 							copy.add(cell);
 							paths.put(cell, copy);
 							heads.add(cell);
-							if (cell.equals(end)) {
-								List<ICell> returnPath = paths.get(end);
-								returnPath.remove(start);
-								return returnPath;
+
+						} else {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							List<ICell> oldPath = paths.get(cell);
+							double oldPathCost = calculateCost(oldPath);
+							double newPathCost = calculateCost(newPath);
+							if (newPathCost < oldPathCost) {
+								paths.put(cell, copy);
 							}
 						}
 						break;
@@ -118,10 +130,16 @@ public class PathFinder {
 							copy.add(cell);
 							paths.put(cell, copy);
 							heads.add(cell);
-							if (cell.equals(end)) {
-								List<ICell> returnPath = paths.get(end);
-								returnPath.remove(start);
-								return returnPath;
+
+						} else {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							List<ICell> oldPath = paths.get(cell);
+							double oldPathCost = calculateCost(oldPath);
+							double newPathCost = calculateCost(newPath);
+							if (newPathCost < oldPathCost) {
+								paths.put(cell, copy);
 							}
 						}
 						break;
@@ -139,10 +157,16 @@ public class PathFinder {
 							copy.add(cell);
 							paths.put(cell, copy);
 							heads.add(cell);
-							if (cell.equals(end)) {
-								List<ICell> returnPath = paths.get(end);
-								returnPath.remove(start);
-								return returnPath;
+
+						} else {
+							List<ICell> newPath = paths.get(head);
+							List<ICell> copy = new ArrayList<ICell>(newPath);
+							copy.add(cell);
+							List<ICell> oldPath = paths.get(cell);
+							double oldPathCost = calculateCost(oldPath);
+							double newPathCost = calculateCost(newPath);
+							if (newPathCost < oldPathCost) {
+								paths.put(cell, copy);
 							}
 						}
 						break;
@@ -155,246 +179,58 @@ public class PathFinder {
 			// paths.remove(head);
 
 		}
-		
-		List<ICell> returnPath = paths.get(end);
-		returnPath.remove(start);
-		return returnPath;
 
-		
-
-	}
-
-	// Iterator<Map.Entry<ICell, List<ICell>>> it = paths.entrySet()
-	// .iterator();
-	// while (it.hasNext()) {
-	// Map.Entry<ICell, List<ICell>> pairs = (Map.Entry<ICell,
-	// List<ICell>>) it.next();
-	// ICell head = pairs.getKey();
-	// List<ICell> path = pairs.getValue();
-	//
-	// if(head.equals(end)){
-	//
-	// }
-	//
-	// it.remove(); // avoids a ConcurrentModificationException
-	// }
-
-	// }
-
-	// public void next(ICell start, ICell end, List<ICell> path, int maxDepth,
-	// int curDepth) {
-	//
-	// curDepth ++;
-	//
-	// if(curDepth > maxDepth){
-	// return;
-	// }
-	//
-	// ICell posX = null;
-	// ICell posY = null;
-	// ICell negX = null;
-	// ICell negY = null;
-	//
-	// List<ICell> copy = new ArrayList<ICell>(path);
-	//
-	// if (start.getPathPosX() == PathType.OPEN) {
-	// for (ICell cell : this.cellsCanBeUsed) {
-	// if (cell.getX() == start.getX() + 1
-	// && cell.getY() == start.getY()) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if (!copy.contains(cell) ) {
-	// posX = cell;
-	// }
-	// }
-	// }
-	//
-	// }
-	// if (start.getPathPosY() == PathType.OPEN) {
-	// for (ICell cell : this.cellsCanBeUsed) {
-	// if (cell.getX() == start.getX()
-	// && cell.getY() == start.getY() + 1) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if (!copy.contains(cell)) {
-	// posY = cell;
-	// }
-	// }
-	// }
-	// }
-	// if (start.getPathNegX() == PathType.OPEN) {
-	// for (ICell cell : this.cellsCanBeUsed) {
-	// if (cell.getX() == start.getX() - 1
-	// && cell.getY() == start.getY()) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if(!copy.contains(cell)) {
-	// negX = cell;
-	// }
-	// }
-	// }
-	// }
-	// if (start.getPathNegY() == PathType.OPEN) {
-	// for (ICell cell : this.cellsCanBeUsed) {
-	// if (cell.getX() == start.getX()
-	// && cell.getY() == start.getY() - 1) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if (!copy.contains(cell)) {
-	// negY = cell;
-	// }
-	// }
-	// }
-	// }
-	//
-	// if(posX != null){
-	// copy.add(posX);
-	// next(posX, end, copy, maxDepth, curDepth);
-	// copy.remove(posX)
-	// }
-	// }
-
-	// public void nextUsingReduce(ICell start, ICell end, List<ICell> path) {
-	//
-	// List<ICell> copy = new ArrayList<ICell>(path);
-	//
-	// if (start.getPathPosX() == PathType.OPEN) {
-	// for (ICell cell : this.reducedCells) {
-	// if (cell.getX() == start.getX() + 1
-	// && cell.getY() == start.getY()) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if (!copy.contains(cell)) {
-	// copy.add(cell);
-	// next(cell, end, copy);
-	// }
-	// }
-	// }
-	//
-	// }
-	// if (start.getPathPosY() == PathType.OPEN) {
-	// for (ICell cell : this.reducedCells) {
-	// if (cell.getX() == start.getX()
-	// && cell.getY() == start.getY() + 1) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if (!copy.contains(cell)) {
-	// copy.add(cell);
-	// next(cell, end, copy);
-	// }
-	// }
-	// }
-	// }
-	// if (start.getPathNegX() == PathType.OPEN) {
-	// for (ICell cell : this.reducedCells) {
-	// if (cell.getX() == start.getX() - 1
-	// && cell.getY() == start.getY()) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if (!copy.contains(cell)) {
-	// copy.add(cell);
-	// next(cell, end, copy);
-	// }
-	// }
-	// }
-	// }
-	// if (start.getPathNegY() == PathType.OPEN) {
-	// for (ICell cell : this.reducedCells) {
-	// if (cell.getX() == start.getX()
-	// && cell.getY() == start.getY() - 1) {
-	// if (cell.equals(end)) {
-	// copy.remove(0);
-	// copy.add(cell);
-	// this.paths.add(copy);
-	// } else if (!copy.contains(cell)) {
-	// copy.add(cell);
-	// next(cell, end, copy);
-	// }
-	// }
-	// }
-	// }
-	// }
-
-	private void reduceCells(int startX, int startY, int endX, int endY,
-			int toleranceX, int toleranceY) {
-		this.reducedCells = new ArrayList<ICell>(this.cellsCanBeUsed);
-
-		if (startX >= endX) {
-			// end
-			// start
-			if (startY >= endY) {
-
-				for (int i = 0; i < this.reducedCells.size(); i++) {
-					ICell c = reducedCells.get(i);
-					if (c.getX() > startX + toleranceX
-							|| c.getX() < endX - toleranceX
-							|| c.getY() > startY + toleranceY
-							|| c.getY() < endY - toleranceY) {
-						reducedCells.remove(i);
-						i--;
-					}
-				}
-
-			}
-			// start
-			// end
-			else {
-				for (int i = 0; i < this.reducedCells.size(); i++) {
-					ICell c = reducedCells.get(i);
-					if (c.getX() > startX + toleranceX
-							|| c.getX() < endX - toleranceX
-							|| c.getY() > endY + toleranceY
-							|| c.getY() < startY - toleranceY) {
-						reducedCells.remove(i);
-						i--;
-					}
-				}
-			}
-		} else if (startX < endX) {
-			// end
-			// start
-			if (startY >= endY) {
-				for (int i = 0; i < this.reducedCells.size(); i++) {
-					ICell c = reducedCells.get(i);
-					if (c.getX() > endX + toleranceX
-							|| c.getX() < startX - toleranceX
-							|| c.getY() > startY + toleranceY
-							|| c.getY() < endY - toleranceY) {
-						reducedCells.remove(i);
-						i--;
-					}
-				}
-			}
-			// start
-			// end
-			else {
-				for (int i = 0; i < this.reducedCells.size(); i++) {
-					ICell c = reducedCells.get(i);
-					if (c.getX() < startX - toleranceX
-							|| c.getX() > endX + toleranceX
-							|| c.getY() > endY + toleranceY
-							|| c.getY() < startY - toleranceY) {
-						reducedCells.remove(i);
-						i--;
-					}
-				}
+		double minCost = Double.MAX_VALUE;
+		List<ICell> mimCostPath = new ArrayList<ICell>();
+		for (ICell cell : unfinishedCells) {
+			List<ICell> p = paths.get(cell);
+			double cost = calculateCost(p);
+			if (cost < minCost) {
+				minCost = cost;
+				mimCostPath = p;
 			}
 		}
 
+		return mimCostPath;
+
+	}
+
+	public double calculateCost(List<ICell> path) {
+		double pathCost = 0;
+
+		for (int i = 0; i < path.size() - 1; i++) {
+			ICell current = path.get(i);
+			ICell next = path.get(i + 1);
+			double moveCost = 0;
+			switch (current.getSurfaceType()) {
+			case BAREFLOOR:
+				moveCost += 1;
+				break;
+			case LOWPILE:
+				moveCost += 2;
+				break;
+			case HIGHPILE:
+				moveCost += 3;
+				break;
+			}
+
+			switch (next.getSurfaceType()) {
+			case BAREFLOOR:
+				moveCost += 1;
+				break;
+			case LOWPILE:
+				moveCost += 2;
+				break;
+			case HIGHPILE:
+				moveCost += 3;
+				break;
+			}
+
+			moveCost = moveCost / 2;
+			pathCost += moveCost;
+		}
+
+		return pathCost;
 	}
 
 }
