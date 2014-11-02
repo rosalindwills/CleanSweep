@@ -23,3 +23,7 @@ visualization/src/main/log/log
 vacuum/src/main/log/log
 vacuum/src/main/log/log
 vacuum/src/main/log/log
+target/
+log/
+*.swp
+
