@@ -24,10 +24,11 @@ public class MemoryLog {
 	}
 
 	private void init() {
-		String filePrefex = new SimpleDateFormat(
+		
+		String folderName = new SimpleDateFormat(
 				"[yyyyMMdd][hh][mm][ss][aaa]").format(new Date());
 		this.logPathString = "src" + File.separator + "main"
-				+ File.separator + "log" + File.separator + "memory" + File.separator + filePrefex;
+				+ File.separator + "log" + File.separator + "memory" + File.separator + folderName;
 		File logFile = new File(logPathString);
 		if (!logFile.exists()) {
 			logFile.getParentFile().mkdirs();
@@ -36,13 +37,14 @@ public class MemoryLog {
 	}
 
 	public void append(BufferedImage bi) {
-
+		
 		String fileNumStr = String.format("%05d", this.fileNum);
 
 		String fileName = this.logPathString + File.separator
 				+ fileNumStr + ".png";
 		
 		this.fileNum ++;
+	
 		try {
 			ImageIO.write(bi, "png", new File(fileName));
 		} catch (Exception e) {
@@ -62,7 +64,5 @@ public class MemoryLog {
 
 	}
 	
-
-
 
 }

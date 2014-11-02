@@ -18,9 +18,9 @@ import javax.swing.JPanel;
 
 import org.xml.sax.SAXException;
 
+import com.se459.modules.models.Observer;
 import com.se459.modules.models.Vacuum;
 import com.se459.sensor.enums.PathType;
-import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.IFloor;
 import com.se459.sensor.interfaces.IHomeLayout;
@@ -52,17 +52,18 @@ class HomeLayoutPanel extends JPanel {
 
 				if (null != cell) {
 					// draw cells
-					if (vacuum.getMemory().getAllKnownCells().contains(cell)){
-						if(cell.isTraversed()){
-							g2d.setColor(getSurfaceColor(cell, cell.getDirtUnits()));
-							Rectangle2D rect = new Rectangle2D.Float(x * xMult, y
-									* yMult, xMult, yMult);
+					if (vacuum.getMemory().getAllKnownCells().contains(cell)) {
+						if (cell.isTraversed()) {
+							g2d.setColor(getSurfaceColor(cell,
+									cell.getDirtUnits()));
+							Rectangle2D rect = new Rectangle2D.Float(x * xMult,
+									y * yMult, xMult, yMult);
 							g2d.fill(rect);
-							
+
 						}
-						
+
 					}
-					
+
 					if (vacuum.getMemory().getAllKnownButNotTraveldCells()
 							.contains(cell)) {
 						g2d.setStroke(new BasicStroke(2));
@@ -70,13 +71,13 @@ class HomeLayoutPanel extends JPanel {
 						g2d.drawRect(x * xMult + xMult / 3, y * yMult + yMult
 								/ 3, xMult / 3, yMult / 3);
 					}
-					if (vacuum.getMemory().getAllKnownAndFinished()
-							.contains(cell)) {
-						g2d.setStroke(new BasicStroke(2));
-						g2d.setColor(Color.gray);
-						g2d.fillRect(x * xMult + xMult / 3, y * yMult + yMult
-								/ 3, xMult / 3, yMult / 3);
-					}
+//					if (vacuum.getMemory().getAllKnownAndFinished()
+//							.contains(cell)) {
+//						g2d.setStroke(new BasicStroke(2));
+//						g2d.setColor(Color.gray);
+//						g2d.fillRect(x * xMult + xMult / 3, y * yMult + yMult
+//								/ 3, xMult / 3, yMult / 3);
+//					}
 
 					// draw walls
 					g2d.setStroke(new BasicStroke(3));
@@ -126,6 +127,7 @@ class HomeLayoutPanel extends JPanel {
 			}
 		}
 
+		// draw return path
 		for (ICell c : vacuum.getNavigationLogic().getReturnPath()) {
 			g2d.setColor(Color.red);
 			g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY() * yMult
@@ -139,33 +141,32 @@ class HomeLayoutPanel extends JPanel {
 		float g = 0;
 		float b = 0;
 
+		switch (cell.getSurfaceType()) {
+		case BAREFLOOR:
+			r = 1.0f;
+			g = 0.5f;
+			b = 0.25f;
+			break;
+		case LOWPILE:
+			r = 0.25f;
+			g = 0.5f;
+			b = 1.0f;
+			break;
+		case HIGHPILE:
+			r = 1.0f;
+			g = 0.3f;
+			b = 0.5f;
+			break;
+		default:
+			break;
+		}
 
-			switch (cell.getSurfaceType()) {
-			case BAREFLOOR:
-				r = 1.0f;
-				g = 0.5f;
-				b = 0.25f;
-				break;
-			case LOWPILE:
-				r = 0.25f;
-				g = 0.5f;
-				b = 1.0f;
-				break;
-			case HIGHPILE:
-				r = 1.0f;
-				g = 0.3f;
-				b = 0.5f;
-				break;
-			default:
-				break;
-			}
+		r *= Math.pow(0.8, dirtUnits);
+		g *= Math.pow(0.8, dirtUnits);
+		b *= Math.pow(0.8, dirtUnits);
 
-			r *= Math.pow(0.8, dirtUnits);
-			g *= Math.pow(0.8, dirtUnits);
-			b *= Math.pow(0.8, dirtUnits);
-
-			Color color = new Color(r, g, b, 1.0f);
-			return color;
+		Color color = new Color(r, g, b, 1.0f);
+		return color;
 
 	}
 
@@ -177,13 +178,16 @@ class HomeLayoutPanel extends JPanel {
 	}
 }
 
-public class HomeLayoutDrawer extends JFrame {
+public class HomeLayoutDrawer extends JFrame implements Observer {
+
+	boolean pause = false;
 
 	ISensor sim = SensorSimulator.getInstance();
 	IHomeLayout layout;
 	Vacuum vacuum;
 
-	public static boolean DEBUG_MODE = true;
+	Thread drawingThread;
+	Thread vacuumThread;
 
 	static boolean windowOpen = true;
 	HomeLayoutPanel layoutPanel;
@@ -217,13 +221,9 @@ public class HomeLayoutDrawer extends JFrame {
 		}
 
 		initUI();
-
-		UpdateThread updateThread = new UpdateThread();
-
-		new Thread(updateThread).start();
-
-		vacuum.Start();
-
+		vacuum.registerObserver(this);
+		vacuumThread = new Thread(vacuum);
+		vacuumThread.start();
 	}
 
 	private void initUI() {
@@ -309,51 +309,36 @@ public class HomeLayoutDrawer extends JFrame {
 	}
 
 	private void outputCurrentLayoutPanel() {
-		int w = layoutPanel.getWidth();
-		int h = layoutPanel.getHeight();
+		int w = this.getWidth();
+		int h = this.getHeight();
 		BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = bi.createGraphics();
-		layoutPanel.print(g);
+		this.print(g);
 		memoryLog.append(bi);
 	}
 
-	class UpdateThread implements Runnable {
-		public void run() {
+	public void update() {
 
-			while (windowOpen) {
+		if (layoutPanel.vacuum.on) {
+			// outputCurrentLayoutPanel();
+			statusPanel.removeAll();
+			String dirtStatusStr = "DirtUnits: "
+					+ layoutPanel.vacuum.getDirtUnits();
+			String chargeStatusStr = "ChargeRemaining: "
+					+ layoutPanel.vacuum.getChargeRemaining();
+			String pathCost = "ReturnCost: "
+					+ layoutPanel.vacuum.getNavigationLogic().getReturnCost();
+			String dispaly = dirtStatusStr + "    " + chargeStatusStr + "    "
+					+ pathCost;
 
-				if (layoutPanel.vacuum.on) {
-
-					statusPanel.removeAll();
-					String dirtStatusStr = "DirtUnits: "
-							+ layoutPanel.vacuum.getDirtUnits();
-					String chargeStatusStr = "ChargeRemaining: "
-							+ layoutPanel.vacuum.getChargeRemaining();
-					String pathCost = "ReturnCost: "
-							+ layoutPanel.vacuum.getNavigationLogic()
-									.getReturnCost();
-					String dispaly = dirtStatusStr + "    " + chargeStatusStr
-							+ "    " + pathCost;
-
-					statusPanel.add(new JLabel(dispaly));
-					statusPanel.validate();
-					layoutPanel.repaint();
-					repaint();
-
-					try {
-						if (DEBUG_MODE) {
-							// this.outputCurrentLayoutPanel();
-						}
-
-						Thread.sleep(Vacuum.delay);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+			JLabel statusLabel = new JLabel(dispaly);
+			statusLabel.setFont(new Font("Arial", Font.BOLD, 16));
+			statusPanel.add(statusLabel);
+			statusPanel.validate();
+			layoutPanel.repaint();
+			repaint();
 
 		}
-
 	}
 
 }

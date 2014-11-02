@@ -43,9 +43,6 @@ import com.se459.sensor.interfaces.ICell;
 
 public class PathFinder {
 	private List<ICell> cellsCanBeUsed = new ArrayList<ICell>();
-	private List<ICell> reducedCells = new ArrayList<ICell>();
-
-	private int maxPaths = 10000;
 
 	public PathFinder(List<ICell> cells) {
 		this.cellsCanBeUsed = new ArrayList<ICell>(cells);
@@ -201,32 +198,8 @@ public class PathFinder {
 		for (int i = 0; i < path.size() - 1; i++) {
 			ICell current = path.get(i);
 			ICell next = path.get(i + 1);
-			double moveCost = 0;
-			switch (current.getSurfaceType()) {
-			case BAREFLOOR:
-				moveCost += 1;
-				break;
-			case LOWPILE:
-				moveCost += 2;
-				break;
-			case HIGHPILE:
-				moveCost += 3;
-				break;
-			}
+			double moveCost = (current.getTraverseCost() + next.getTraverseCost())/2;
 
-			switch (next.getSurfaceType()) {
-			case BAREFLOOR:
-				moveCost += 1;
-				break;
-			case LOWPILE:
-				moveCost += 2;
-				break;
-			case HIGHPILE:
-				moveCost += 3;
-				break;
-			}
-
-			moveCost = moveCost / 2;
 			pathCost += moveCost;
 		}
 

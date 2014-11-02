@@ -38,7 +38,7 @@ public class TestVacuum {
 		vacuum = Vacuum.getInstance(sim, 1
 				, 0, 0);
 		
-		vacuum.Start();
+//		vacuum.Start();
 
 /*		
 		while(vacuum.on)

@@ -22,7 +22,7 @@ public class StartVacuum {
 
             //add logic to determine if vacuum is currently running.
             //if vacuum is not running, start it
-            vacuum.Start();
+            new Thread(vacuum).start();
  
             Thread.sleep(5000);
 

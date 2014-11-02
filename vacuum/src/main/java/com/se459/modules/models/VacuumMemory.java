@@ -40,10 +40,6 @@ public class VacuumMemory {
 		finishedCells.add(cell);
 	}
 
-	public void setFinished(ICell cell) {
-		unfinishedCells.remove(cell);
-		finishedCells.add(cell);
-	}
 
 	public List<ICell> getAllKnownButNotTraveldCells() {
 		return this.unfinishedCells;

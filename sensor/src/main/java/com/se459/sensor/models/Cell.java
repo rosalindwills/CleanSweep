@@ -93,7 +93,7 @@ public class Cell implements ICell {
 	}
 
 	@Override
-	public int getTraverseCost() {
+	public double getTraverseCost() {
 		if (this.traversed) {
 			switch (this.getSurfaceType()) {
 			case BAREFLOOR:
@@ -112,7 +112,7 @@ public class Cell implements ICell {
 	}
 
 	@Override
-	public int getVacuumCost() {
+	public double getVacuumCost() {
 		switch (this.getSurfaceType()) {
 		case BAREFLOOR:
 			return ICell.BAREFLOOR_COST;

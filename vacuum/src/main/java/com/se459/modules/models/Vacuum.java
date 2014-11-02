@@ -10,8 +10,10 @@ import com.se459.util.log.Log;
 import com.se459.util.log.LogFactory;
 
 public class Vacuum implements Runnable {
+	
+	private Observer observer;
 
-	public static long delay = 2000;
+	public static long delay = 100;
 
 	private ICell current;
 	private ICell next;
@@ -27,11 +29,10 @@ public class Vacuum implements Runnable {
 	Log scnLog = LogFactory.newScreenLog();
 
 	private int dirtUnits;
-	final double dirtCapacity = 50;
+	final double dirtCapacity = 2;
 
 	double chargeRemaining;
-	final double chargeCapacity = 100;
-
+	final double chargeCapacity = 70;
 
 	// the thread the vacuum is running in
 	Thread thread;
@@ -52,17 +53,8 @@ public class Vacuum implements Runnable {
 
 		memory = new VacuumMemory();
 		navLogic = new NavigationLogic(sensorSimulator, floor, memory, scnLog);
-	}
-
-	public void Start() {
-
+		
 		on = true;
-
-		thread = new Thread(this);
-		thread.start();
-
-		scnLog.append("Start Vacuum...");
-		log.append("Started the vacuum");
 	}
 
 	public void Stop() {
@@ -82,44 +74,47 @@ public class Vacuum implements Runnable {
 		current = sensor.getStartPoint(this.currentFloor);
 		memory.addNewCell(current);
 		navLogic.moveTo(current);
+		this.next = current;
+		this.observer.update();
+		sleep();
 		Sweep(current);
-		this.next = null;
+		
 		while (on) {
-			if (next != null) {
+			if (!next.equals(current)) {
 				double batteryUnitDrain = this.navLogic.moveTo(this.next);
 				this.chargeRemaining -= batteryUnitDrain;
-				sleep();
 				this.current = this.navLogic.readCurrentCell();
-				if(this.current.equals(this.sensor.getStartPoint(this.currentFloor))){
+				if (this.current.equals(this.sensor
+						.getStartPoint(this.currentFloor))) {
 					this.chargeRemaining = this.chargeCapacity;
+					this.navLogic.reset();
 				}
+				this.observer.update();
+				sleep();
 				Sweep(current);
 				memory.output();
 			}
-			this.next = this.navLogic.findNext();
-			this.navLogic.checkBattery(this.chargeRemaining);
+			this.next = this.navLogic.checkAndGetNext(this.chargeRemaining);
+			this.observer.update();
+			sleep();
 		}
 	}
 
 	private void Sweep(ICell cell) {
-		if (dirtUnits < dirtCapacity) {
+		if (this.navLogic.checkIfCanDoVacuum(chargeRemaining, cell)) {
 
 			while (!cell.isClean()) {
-				cell.cleanCell();
-				this.chargeRemaining -= cell.getVacuumCost();
-				sleep();
+				
+					cell.cleanCell();
+					this.chargeRemaining -= cell.getVacuumCost();
+					this.observer.update();
+					sleep();
+				} 
+				memory.becomeFinished(current);
 			}
 
-			memory.becomeFinished(current);
-
-			if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
-				// chargeRemaining -= 1;
-			} else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
-				// chargeRemaining -= 2;
-			} else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
-				// chargeRemaining -= 3;
-			}
-		}
+			
+		
 	}
 
 	public int GetX() {
@@ -162,8 +157,12 @@ public class Vacuum implements Runnable {
 	public VacuumMemory getMemory() {
 		return this.memory;
 	}
-	
-	public NavigationLogic getNavigationLogic(){
+
+	public NavigationLogic getNavigationLogic() {
 		return this.navLogic;
+	}
+	
+	public void registerObserver(Observer ob){
+		this.observer = ob;
 	}
 }
