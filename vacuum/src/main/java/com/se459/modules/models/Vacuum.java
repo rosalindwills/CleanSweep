@@ -11,7 +11,7 @@ import com.se459.util.log.LogFactory;
 
 public class Vacuum implements Runnable {
 
-	public static long delay = 300;
+	public static long delay = 2000;
 
 	private ICell current;
 	private ICell next;
@@ -79,10 +79,9 @@ public class Vacuum implements Runnable {
 	}
 
 	public void run() {
-
-		this.current = navLogic.readCurrentCell();
+		current = sensor.getStartPoint(this.currentFloor);
 		memory.addNewCell(current);
-		this.navLogic.moveTo(current);
+		navLogic.moveTo(current);
 		Sweep(current);
 		this.next = null;
 		while (on) {
@@ -105,8 +104,9 @@ public class Vacuum implements Runnable {
 	private void Sweep(ICell cell) {
 		if (dirtUnits < dirtCapacity) {
 
-			while (cell.getDirtUnits() != 0) {
+			while (!cell.isClean()) {
 				cell.cleanCell();
+				this.chargeRemaining -= cell.getVacuumCost();
 				sleep();
 			}
 

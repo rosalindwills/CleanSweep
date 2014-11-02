@@ -36,7 +36,7 @@ public class NavigationLogic {
 
 	public NavigationLogic(ISensor sensor, int floor,
 			VacuumMemory vacuumMemory, Log log) {
-		currentPosition = sensor.getStartPoint(floor);
+		this.currentPosition = sensor.getStartPoint(this.currentFloor);
 		this.sensor = sensor;
 		this.log = log;
 		this.memory = vacuumMemory;
@@ -136,54 +136,41 @@ public class NavigationLogic {
 
 	}
 
-	public double moveTo(ICell next) {
-		double batteryUnitDrain = 0;
-		
-		 switch (this.currentPosition.getSurfaceType()) {
-		 case BAREFLOOR:
-		 batteryUnitDrain += 1;
-		 break;
-		 case LOWPILE:
-		 batteryUnitDrain += 2;
-		 break;
-		 case HIGHPILE:
-		 batteryUnitDrain += 3;
-		 break;
-		 }
-		
-		 switch (next.getSurfaceType()) {
-		 case BAREFLOOR:
-		 batteryUnitDrain += 1;
-		 break;
-		 case LOWPILE:
-		 batteryUnitDrain += 2;
-		 break;
-		 case HIGHPILE:
-		 batteryUnitDrain += 3;
-		 break;
-		 }
-		
-		 batteryUnitDrain = batteryUnitDrain / 2;
+	public double moveTo(ICell destination) {
+	
+		destination.setTraversed();
 
-		this.currentPosition = next;
+		double batteryUnitDrain;
+		if (this.currentPosition.equals(destination)) {
+			batteryUnitDrain =  0;
+		}
 
-		if (this.sensor.getPosXPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+		batteryUnitDrain = (this.currentPosition.getTraverseCost() + destination
+				.getTraverseCost()) / 2;
+
+		this.currentPosition = destination;
+
+		if (this.sensor.getPosXPathType(currentFloor, destination.getX(),
+				destination.getY()) == PathType.OPEN) {
 			this.memory.addNewCell(this.sensor.getPosXCell(currentFloor,
-					next.getX(), next.getY()));
+					destination.getX(), destination.getY()));
 
 		}
-		if (this.sensor.getPosYPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+		if (this.sensor.getPosYPathType(currentFloor, destination.getX(),
+				destination.getY()) == PathType.OPEN) {
 			this.memory.addNewCell(this.sensor.getPosYCell(currentFloor,
-					next.getX(), next.getY()));
+					destination.getX(), destination.getY()));
 
 		}
-		if (this.sensor.getNegXPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+		if (this.sensor.getNegXPathType(currentFloor, destination.getX(),
+				destination.getY()) == PathType.OPEN) {
 			this.memory.addNewCell(this.sensor.getNegXCell(currentFloor,
-					next.getX(), next.getY()));
+					destination.getX(), destination.getY()));
 		}
-		if (this.sensor.getNegYPathType(currentFloor, next.getX(), next.getY()) == PathType.OPEN) {
+		if (this.sensor.getNegYPathType(currentFloor, destination.getX(),
+				destination.getY()) == PathType.OPEN) {
 			this.memory.addNewCell(this.sensor.getNegYCell(currentFloor,
-					next.getX(), next.getY()));
+					destination.getX(), destination.getY()));
 		}
 		if (!this.isReturning) {
 			// calculateReturnCost();

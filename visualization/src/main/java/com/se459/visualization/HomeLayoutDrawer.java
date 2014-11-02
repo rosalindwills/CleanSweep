@@ -52,11 +52,17 @@ class HomeLayoutPanel extends JPanel {
 
 				if (null != cell) {
 					// draw cells
-					g2d.setColor(getSurfaceColor(cell.getSurfaceType(),
-							cell.getDirtUnits()));
-					Rectangle2D rect = new Rectangle2D.Float(x * xMult, y
-							* yMult, xMult, yMult);
-					g2d.fill(rect);
+					if (vacuum.getMemory().getAllKnownCells().contains(cell)){
+						if(cell.isTraversed()){
+							g2d.setColor(getSurfaceColor(cell, cell.getDirtUnits()));
+							Rectangle2D rect = new Rectangle2D.Float(x * xMult, y
+									* yMult, xMult, yMult);
+							g2d.fill(rect);
+							
+						}
+						
+					}
+					
 					if (vacuum.getMemory().getAllKnownButNotTraveldCells()
 							.contains(cell)) {
 						g2d.setStroke(new BasicStroke(2));
@@ -76,7 +82,6 @@ class HomeLayoutPanel extends JPanel {
 					g2d.setStroke(new BasicStroke(3));
 					g2d.setColor(Color.black);
 					if (cell.getPathNegX() != PathType.OPEN) {
-
 						g2d.drawLine(x * xMult, y * yMult, x * xMult, y * yMult
 								+ yMult);
 
@@ -129,37 +134,39 @@ class HomeLayoutPanel extends JPanel {
 		}
 	}
 
-	private Color getSurfaceColor(SurfaceType type, int dirtUnits) {
+	private Color getSurfaceColor(ICell cell, int dirtUnits) {
 		float r = 0;
 		float g = 0;
 		float b = 0;
 
-		switch (type) {
-		case BAREFLOOR:
-			r = 1.0f;
-			g = 0.5f;
-			b = 0.25f;
-			break;
-		case LOWPILE:
-			r = 0.25f;
-			g = 0.5f;
-			b = 1.0f;
-			break;
-		case HIGHPILE:
-			r = 1.0f;
-			g = 0.3f;
-			b = 0.5f;
-			break;
-		default:
-			break;
-		}
 
-		r *= Math.pow(0.8, dirtUnits);
-		g *= Math.pow(0.8, dirtUnits);
-		b *= Math.pow(0.8, dirtUnits);
+			switch (cell.getSurfaceType()) {
+			case BAREFLOOR:
+				r = 1.0f;
+				g = 0.5f;
+				b = 0.25f;
+				break;
+			case LOWPILE:
+				r = 0.25f;
+				g = 0.5f;
+				b = 1.0f;
+				break;
+			case HIGHPILE:
+				r = 1.0f;
+				g = 0.3f;
+				b = 0.5f;
+				break;
+			default:
+				break;
+			}
 
-		Color color = new Color(r, g, b, 1.0f);
-		return color;
+			r *= Math.pow(0.8, dirtUnits);
+			g *= Math.pow(0.8, dirtUnits);
+			b *= Math.pow(0.8, dirtUnits);
+
+			Color color = new Color(r, g, b, 1.0f);
+			return color;
+
 	}
 
 	@Override
