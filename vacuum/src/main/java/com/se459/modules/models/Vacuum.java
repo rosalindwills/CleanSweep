@@ -19,6 +19,7 @@ public class Vacuum implements Runnable {
 
 	private VacuumMemory memory;
 	private NavigationLogic navLogic;
+        private SurfaceType previousSurfaceType = SurfaceType.BAREFLOOR;
 
 	public volatile boolean on;
 
@@ -82,6 +83,7 @@ public class Vacuum implements Runnable {
 		this.current = navLogic.readCurrentCell();
 		memory.addNewCell(current);
 		this.navLogic.moveTo(current);
+                DecreaseChargeBySurfaceTypeAfterMove(current);
 		Sweep(current);
 		memory.output();
 		this.next = null;
@@ -90,6 +92,7 @@ public class Vacuum implements Runnable {
 				this.navLogic.moveTo(this.next);
 				sleep();
 				this.current = this.navLogic.readCurrentCell();
+                                DecreaseChargeBySurfaceTypeAfterMove(current);
 				Sweep(current);
 				memory.output();
 			}
@@ -208,22 +211,57 @@ public class Vacuum implements Runnable {
 	private void Sweep(ICell cell) {
 		if (dirtUnits < dirtCapacity) {
 
-			while (cell.getDirtUnits() != 0) {
+
+			while (cell.getDirtUnits() != 0 && chargeRemaining > 0) {
 				cell.cleanCell();
+                                DecreaseChargeRemainingBySurfaceTypeAfterClean(cell);
 				sleep();
 			}
 			
 			memory.becomeFinished(current);
 
-			if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
-				// chargeRemaining -= 1;
-			} else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
-				// chargeRemaining -= 2;
-			} else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
-				// chargeRemaining -= 3;
-			}
 		}
 	}
+
+        private void DecreaseChargeRemainingBySurfaceTypeAfterClean(ICell cell){
+                 if (cell.getSurfaceType() == SurfaceType.BAREFLOOR){
+                     if (chargeRemaining >= SurfaceType.BAREFLOOR.getValue()){
+                         chargeRemaining -= SurfaceType.BAREFLOOR.getValue();     
+                     }
+                     else {
+                         chargeRemaining = 0;
+                     }
+                 }
+                 else if (cell.getSurfaceType() == SurfaceType.LOWPILE){
+                     if (chargeRemaining >= SurfaceType.LOWPILE.getValue()){
+                         chargeRemaining -= SurfaceType.LOWPILE.getValue();     
+                     }
+                     else {
+                         chargeRemaining = 0;
+                     }
+                 }
+                 else if (cell.getSurfaceType() == SurfaceType.HIGHPILE){
+                     if (chargeRemaining >= SurfaceType.HIGHPILE.getValue()){
+                         chargeRemaining -= SurfaceType.HIGHPILE.getValue();     
+                     }
+                     else {
+                         chargeRemaining = 0;
+                     }
+                 } 
+        }  
+
+        private void DecreaseChargeBySurfaceTypeAfterMove(ICell cell){
+                 int chargeUnitsToDecrease = (previousSurfaceType.getValue() + cell.getSurfaceType().getValue())/2;
+
+                 if (chargeRemaining >= chargeUnitsToDecrease){
+                     chargeRemaining -= chargeUnitsToDecrease;
+                 }
+                 else {
+                     chargeRemaining = 0;
+                 }
+
+                 previousSurfaceType = cell.getSurfaceType();
+        }
 
 	//
 	// private void Charge()
