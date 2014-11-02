@@ -29,8 +29,8 @@ public class Vacuum implements Runnable {
 	private int dirtUnits;
 	final int dirtCapacity = 50;
 
-	int chargeRemaining;
-	final int chargeCapacity = 50;
+	double chargeRemaining;
+	final double chargeCapacity = 50.0;
 
 	// for testing, variables below should be removed finally.
 	public int currentReturnPathNum = 0;
@@ -224,6 +224,9 @@ public class Vacuum implements Runnable {
 	}
 
         private void DecreaseChargeRemainingBySurfaceTypeAfterClean(ICell cell){
+
+                 scnLog.append("After Clean - Charge Remaining: " + chargeRemaining);
+
                  if (cell.getSurfaceType() == SurfaceType.BAREFLOOR){
                      if (chargeRemaining >= SurfaceType.BAREFLOOR.getValue()){
                          chargeRemaining -= SurfaceType.BAREFLOOR.getValue();     
@@ -251,7 +254,14 @@ public class Vacuum implements Runnable {
         }  
 
         private void DecreaseChargeBySurfaceTypeAfterMove(ICell cell){
-                 int chargeUnitsToDecrease = (previousSurfaceType.getValue() + cell.getSurfaceType().getValue())/2;
+                 scnLog.append("After Move - Charge Remaining: " + chargeRemaining);
+                 
+                 double chargeUnitsToDecrease = ((previousSurfaceType.getValue() + cell.getSurfaceType().getValue())/2.0);
+
+                
+                 scnLog.append("After Move - previous Surface Type: " + previousSurfaceType.getValue());
+                 scnLog.append("After Move - current Surface Type: " + cell.getSurfaceType().getValue());
+                 scnLog.append("After Move - Decrease charge by " + chargeUnitsToDecrease + " unit(s)");
 
                  if (chargeRemaining >= chargeUnitsToDecrease){
                      chargeRemaining -= chargeUnitsToDecrease;
@@ -311,7 +321,7 @@ public class Vacuum implements Runnable {
 		return dirtUnits;
 	}
 
-	public int getChargeRemaining() {
+	public double getChargeRemaining() {
 		return chargeRemaining;
 	}
 	

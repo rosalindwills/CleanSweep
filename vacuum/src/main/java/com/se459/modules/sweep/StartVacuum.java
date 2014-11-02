@@ -24,7 +24,7 @@ public class StartVacuum {
             //if vacuum is not running, start it
             vacuum.Start();
  
-            Thread.sleep(5000);
+            Thread.sleep(20000);
 
  	   //if vacuum is running, stop it
            vacuum.Stop();
