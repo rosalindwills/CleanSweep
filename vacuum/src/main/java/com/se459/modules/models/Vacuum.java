@@ -32,7 +32,7 @@ public class Vacuum implements Runnable {
 	final double dirtCapacity = 2;
 
 	double chargeRemaining;
-	final double chargeCapacity = 70;
+	final double chargeCapacity = 60;
 
 	// the thread the vacuum is running in
 	Thread thread;
