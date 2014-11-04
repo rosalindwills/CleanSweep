@@ -101,20 +101,17 @@ public class Vacuum implements Runnable {
 	}
 
 	private void Sweep(ICell cell) {
-		if (this.navLogic.checkIfCanDoVacuum(chargeRemaining, cell)) {
-
 			while (!cell.isClean()) {
-				
+				if (this.navLogic.checkIfCanDoVacuum(chargeRemaining, cell)) {
 					cell.cleanCell();
 					this.chargeRemaining -= cell.getVacuumCost();
 					this.observer.update();
-					sleep();
-				} 
-				memory.becomeFinished(current);
+					sleep();	
+				}else{
+					return;
+				}
 			}
-
-			
-		
+			memory.becomeFinished(current);
 	}
 
 	public int GetX() {

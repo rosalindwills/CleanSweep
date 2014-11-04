@@ -76,6 +76,7 @@ class HomeLayoutPanel extends JPanel {
 //						g2d.setStroke(new BasicStroke(2));
 //						g2d.setColor(Color.gray);
 //						g2d.fillRect(x * xMult + xMult / 3, y * yMult + yMult
+					
 //								/ 3, xMult / 3, yMult / 3);
 //					}
 
@@ -221,6 +222,12 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 		}
 
 		initUI();
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		vacuum.registerObserver(this);
 		vacuumThread = new Thread(vacuum);
 		vacuumThread.start();

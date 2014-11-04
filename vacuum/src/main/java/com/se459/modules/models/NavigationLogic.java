@@ -179,8 +179,8 @@ public class NavigationLogic {
 
 	}
 
-	public boolean checkIfCanDoVacuum(double remaining, ICell next) {
-		double nextVacuumCost = next.getVacuumCost();
+	public boolean checkIfCanDoVacuum(double remaining, ICell cell) {
+		double nextVacuumCost = cell.getVacuumCost();
 		if (remaining - nextVacuumCost < this.returnCost) {
 			this.currentTravelingPath = this.returnPath;
 			this.isReturning = true;
