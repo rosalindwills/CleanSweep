@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.xml.sax.SAXException;
@@ -71,14 +72,14 @@ class HomeLayoutPanel extends JPanel {
 						g2d.drawRect(x * xMult + xMult / 3, y * yMult + yMult
 								/ 3, xMult / 3, yMult / 3);
 					}
-//					if (vacuum.getMemory().getAllKnownAndFinished()
-//							.contains(cell)) {
-//						g2d.setStroke(new BasicStroke(2));
-//						g2d.setColor(Color.gray);
-//						g2d.fillRect(x * xMult + xMult / 3, y * yMult + yMult
-					
-//								/ 3, xMult / 3, yMult / 3);
-//					}
+					// if (vacuum.getMemory().getAllKnownAndFinished()
+					// .contains(cell)) {
+					// g2d.setStroke(new BasicStroke(2));
+					// g2d.setColor(Color.gray);
+					// g2d.fillRect(x * xMult + xMult / 3, y * yMult + yMult
+
+					// / 3, xMult / 3, yMult / 3);
+					// }
 
 					// draw walls
 					g2d.setStroke(new BasicStroke(3));
@@ -340,6 +341,12 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 			repaint();
 
 		}
+	}
+
+	@Override
+	public void sendNotification(String message) {
+		JOptionPane.showMessageDialog(this, message);
+
 	}
 
 }

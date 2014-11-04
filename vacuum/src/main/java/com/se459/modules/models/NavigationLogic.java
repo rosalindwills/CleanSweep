@@ -59,119 +59,148 @@ public class NavigationLogic {
 
 		if (this.isReturning) {
 			return this.currentTravelingPath.remove(0);
+
 		} else {
-			ICell posXCell = sensor.getPosXCell(currentFloor,
-					currentPosition.getX(), currentPosition.getY());
-			boolean posX = sensor.getPosXPathType(currentFloor,
-					currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
 
-			ICell posYCell = sensor.getPosYCell(currentFloor,
-					currentPosition.getX(), currentPosition.getY());
-			boolean posY = sensor.getPosYPathType(currentFloor,
-					currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
+			if (!this.currentTravelingPath.isEmpty()) {
+				ICell cell = this.currentTravelingPath.get(0);
+				double nextMoveCost = (cell.getTraverseCost() + this.currentPosition
+						.getTraverseCost()) / 2;
+				List<ICell> destination = new ArrayList<ICell>();
+				destination.add(sensor.getStartPoint(this.currentFloor));
 
-			ICell negXCell = sensor.getNegXCell(currentFloor,
-					currentPosition.getX(), currentPosition.getY());
-			boolean negX = sensor.getNegXPathType(currentFloor,
-					currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
+				PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
+				List<ICell> returnPathFromNext = pf.findPath(cell, destination);
+				double returnCostFromNext = pf
+						.calculateCost(returnPathFromNext);
 
-			ICell negYCell = sensor.getNegYCell(currentFloor,
-					currentPosition.getX(), currentPosition.getY());
-			boolean negY = sensor.getNegYPathType(currentFloor,
-					currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
-
-			if ((!posX || !this.memory.ifUnfinished(posXCell))
-					&& (!posY || !this.memory.ifUnfinished(posYCell))
-					&& (!negX || !this.memory.ifUnfinished(negXCell))
-					&& (!negY || !this.memory.ifUnfinished(negYCell))) {
-
-				findPathToNextKnownCell();
-				ICell cell = this.currentTravelingPath.remove(0);
-				if(cell.equals(currentPosition)){
-					cell = this.currentTravelingPath.remove(0);
+				if (remaining - nextMoveCost >= returnCostFromNext) {
+					return this.currentTravelingPath.remove(0);
+				} else {
+					this.isReturning = true;
+					this.currentTravelingPath = this.returnPath;
+					return this.returnPath.remove(0);
 				}
-				return cell;
 
 			} else {
+				ICell posXCell = sensor.getPosXCell(currentFloor,
+						currentPosition.getX(), currentPosition.getY());
+				boolean posX = sensor.getPosXPathType(currentFloor,
+						currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
 
-				if (posX && this.memory.ifUnfinished(posXCell)) {
-					double nextMoveCost = (posXCell.getTraverseCost() + this.currentPosition
-							.getTraverseCost()) / 2;
+				ICell posYCell = sensor.getPosYCell(currentFloor,
+						currentPosition.getX(), currentPosition.getY());
+				boolean posY = sensor.getPosYPathType(currentFloor,
+						currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
 
-					List<ICell> destination = new ArrayList<ICell>();
-					destination.add(sensor.getStartPoint(this.currentFloor));
+				ICell negXCell = sensor.getNegXCell(currentFloor,
+						currentPosition.getX(), currentPosition.getY());
+				boolean negX = sensor.getNegXPathType(currentFloor,
+						currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
 
-					PathFinder pf = new PathFinder(
-							this.memory.getAllKnownCells());
-					List<ICell> returnPathFromNext = pf.findPath(posXCell,
-							destination);
-					double returnCostFromNext = pf
-							.calculateCost(returnPathFromNext);
+				ICell negYCell = sensor.getNegYCell(currentFloor,
+						currentPosition.getX(), currentPosition.getY());
+				boolean negY = sensor.getNegYPathType(currentFloor,
+						currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
 
-					if (remaining - nextMoveCost >= returnCostFromNext) {
-						return posXCell;
+				if ((!posX || !this.memory.ifUnfinished(posXCell))
+						&& (!posY || !this.memory.ifUnfinished(posYCell))
+						&& (!negX || !this.memory.ifUnfinished(negXCell))
+						&& (!negY || !this.memory.ifUnfinished(negYCell))) {
+
+					findPathToNextKnownCell();
+					ICell cell = this.currentTravelingPath.remove(0);
+					if (cell.equals(currentPosition)) {
+						cell = this.currentTravelingPath.remove(0);
 					}
-				}
-				if (negX && this.memory.ifUnfinished(negXCell)) {
-					double nextMoveCost = (negXCell.getTraverseCost() + this.currentPosition
-							.getTraverseCost()) / 2;
+					return cell;
 
-					List<ICell> destination = new ArrayList<ICell>();
-					destination.add(sensor.getStartPoint(this.currentFloor));
+				} else {
 
-					PathFinder pf = new PathFinder(
-							this.memory.getAllKnownCells());
-					List<ICell> returnPathFromNext = pf.findPath(negXCell,
-							destination);
-					double returnCostFromNext = pf
-							.calculateCost(returnPathFromNext);
+					if (posX && this.memory.ifUnfinished(posXCell)) {
+						double nextMoveCost = (posXCell.getTraverseCost() + this.currentPosition
+								.getTraverseCost()) / 2;
 
-					if (remaining - nextMoveCost >= returnCostFromNext) {
-						return negXCell;
+						List<ICell> destination = new ArrayList<ICell>();
+						destination
+								.add(sensor.getStartPoint(this.currentFloor));
+
+						PathFinder pf = new PathFinder(
+								this.memory.getAllKnownCells());
+						List<ICell> returnPathFromNext = pf.findPath(posXCell,
+								destination);
+						double returnCostFromNext = pf
+								.calculateCost(returnPathFromNext);
+
+						if (remaining - nextMoveCost >= returnCostFromNext) {
+							return posXCell;
+						}
 					}
-				}
+					if (negX && this.memory.ifUnfinished(negXCell)) {
+						double nextMoveCost = (negXCell.getTraverseCost() + this.currentPosition
+								.getTraverseCost()) / 2;
 
-				if (posY && this.memory.ifUnfinished(posYCell)) {
-					double nextMoveCost = (posYCell.getTraverseCost() + this.currentPosition
-							.getTraverseCost()) / 2;
+						List<ICell> destination = new ArrayList<ICell>();
+						destination
+								.add(sensor.getStartPoint(this.currentFloor));
 
-					List<ICell> destination = new ArrayList<ICell>();
-					destination.add(sensor.getStartPoint(this.currentFloor));
+						PathFinder pf = new PathFinder(
+								this.memory.getAllKnownCells());
+						List<ICell> returnPathFromNext = pf.findPath(negXCell,
+								destination);
+						double returnCostFromNext = pf
+								.calculateCost(returnPathFromNext);
 
-					PathFinder pf = new PathFinder(
-							this.memory.getAllKnownCells());
-					List<ICell> returnPathFromNext = pf.findPath(posYCell,
-							destination);
-					double returnCostFromNext = pf
-							.calculateCost(returnPathFromNext);
-
-					if (remaining - nextMoveCost >= returnCostFromNext) {
-						return posYCell;
+						if (remaining - nextMoveCost >= returnCostFromNext) {
+							return negXCell;
+						}
 					}
-				}
 
-				if (negY && this.memory.ifUnfinished(negYCell)) {
-					double nextMoveCost = (negYCell.getTraverseCost() + this.currentPosition
-							.getTraverseCost()) / 2;
+					if (posY && this.memory.ifUnfinished(posYCell)) {
+						double nextMoveCost = (posYCell.getTraverseCost() + this.currentPosition
+								.getTraverseCost()) / 2;
 
-					List<ICell> destination = new ArrayList<ICell>();
-					destination.add(sensor.getStartPoint(this.currentFloor));
+						List<ICell> destination = new ArrayList<ICell>();
+						destination
+								.add(sensor.getStartPoint(this.currentFloor));
 
-					PathFinder pf = new PathFinder(
-							this.memory.getAllKnownCells());
-					List<ICell> returnPathFromNext = pf.findPath(negYCell,
-							destination);
-					double returnCostFromNext = pf
-							.calculateCost(returnPathFromNext);
+						PathFinder pf = new PathFinder(
+								this.memory.getAllKnownCells());
+						List<ICell> returnPathFromNext = pf.findPath(posYCell,
+								destination);
+						double returnCostFromNext = pf
+								.calculateCost(returnPathFromNext);
 
-					if (remaining - nextMoveCost >= returnCostFromNext) {
-						return negYCell;
+						if (remaining - nextMoveCost >= returnCostFromNext) {
+							return posYCell;
+						}
 					}
-				}
 
-				this.isReturning = true;
-				this.currentTravelingPath = this.returnPath;
-				return this.returnPath.remove(0);
+					if (negY && this.memory.ifUnfinished(negYCell)) {
+						double nextMoveCost = (negYCell.getTraverseCost() + this.currentPosition
+								.getTraverseCost()) / 2;
+
+						List<ICell> destination = new ArrayList<ICell>();
+						destination
+								.add(sensor.getStartPoint(this.currentFloor));
+
+						PathFinder pf = new PathFinder(
+								this.memory.getAllKnownCells());
+						List<ICell> returnPathFromNext = pf.findPath(negYCell,
+								destination);
+						double returnCostFromNext = pf
+								.calculateCost(returnPathFromNext);
+
+						if (remaining - nextMoveCost >= returnCostFromNext) {
+							return negYCell;
+						}
+					}
+
+					this.isReturning = true;
+					this.currentTravelingPath = this.returnPath;
+					return this.returnPath.remove(0);
+
+				}
 
 			}
 

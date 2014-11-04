@@ -13,7 +13,7 @@ public class Vacuum implements Runnable {
 	
 	private Observer observer;
 
-	public static long delay = 100;
+	public static long delay = 30;
 
 	private ICell current;
 	private ICell next;
@@ -32,7 +32,7 @@ public class Vacuum implements Runnable {
 	final double dirtCapacity = 2;
 
 	double chargeRemaining;
-	final double chargeCapacity = 60;
+	final double chargeCapacity = 64;
 
 	// the thread the vacuum is running in
 	Thread thread;
@@ -86,6 +86,8 @@ public class Vacuum implements Runnable {
 				this.current = this.navLogic.readCurrentCell();
 				if (this.current.equals(this.sensor
 						.getStartPoint(this.currentFloor))) {
+					this.observer.update();
+					this.observer.sendNotification("Returned! Charging Left: " + this.chargeRemaining);
 					this.chargeRemaining = this.chargeCapacity;
 					this.navLogic.reset();
 				}
