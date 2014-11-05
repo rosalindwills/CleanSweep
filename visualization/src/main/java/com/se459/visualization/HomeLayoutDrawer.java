@@ -65,7 +65,7 @@ class HomeLayoutPanel extends JPanel {
 
 					}
 
-					if (vacuum.getMemory().getAllKnownButNotTraveldCells()
+					if (vacuum.getMemory().getAllUnfinishedCells()
 							.contains(cell)) {
 						g2d.setStroke(new BasicStroke(2));
 						g2d.setColor(Color.black);

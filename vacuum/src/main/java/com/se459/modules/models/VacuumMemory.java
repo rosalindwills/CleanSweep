@@ -41,7 +41,7 @@ public class VacuumMemory {
 	}
 
 
-	public List<ICell> getAllKnownButNotTraveldCells() {
+	public List<ICell> getAllUnfinishedCells() {
 		return this.unfinishedCells;
 	}
 	
@@ -61,7 +61,7 @@ public class VacuumMemory {
 		return cells;
 	}
 	
-	public List<ICell> getAllKnownAndFinished() {
+	public List<ICell> getAllFinishedCells() {
 		return this.finishedCells;
 	}
 
