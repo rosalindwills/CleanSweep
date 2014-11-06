@@ -1,7 +1,8 @@
 package com.se459.modules.models;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.List;
 /*
  class Cell{
@@ -37,6 +38,9 @@ import java.util.List;
  }
  */
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
 import com.se459.sensor.enums.PathType;
 import com.se459.sensor.interfaces.ICell;
@@ -48,158 +52,195 @@ public class PathFinder {
 		this.cellsCanBeUsed = new ArrayList<ICell>(cells);
 	}
 
+	class ValueComparator implements Comparator<ICell> {
+
+		Map<ICell, List<ICell>> map;
+
+		public ValueComparator(Map<ICell, List<ICell>> base) {
+			this.map = base;
+		}
+
+		public int compare(ICell a, ICell b) {
+			if (PathFinder.calculateCost(map.get(a)) >= PathFinder
+					.calculateCost(map.get(b))) {
+				return 1;
+			} else {
+				return -1;
+			}
+		}
+	}
+
+	private Map<ICell, List<ICell>> sortByValue(
+			Map<ICell, List<ICell>> unsortedMap) {
+		Map<ICell, List<ICell>> sortedMap = new TreeMap<ICell, List<ICell>>(
+				new ValueComparator(unsortedMap));
+		sortedMap.putAll(unsortedMap);
+		return sortedMap;
+	}
+
 	public List<ICell> findPath(ICell start, List<ICell> unfinishedCells) {
 
-		List<ICell> heads = new ArrayList<ICell>();
-		heads.add(start);
+		Map<ICell, List<ICell>> finished = new Hashtable<ICell, List<ICell>>();
+		Map<ICell, List<ICell>> heads = new Hashtable<ICell, List<ICell>>();
+		List<ICell> list = new ArrayList<ICell>();
+		list.add(start);
+		heads.put(start, list);
 
-		List<ICell> path = new ArrayList<ICell>();
-		path.add(start);
+		while (heads.size() > 0) {
+			Map<ICell, List<ICell>> sortedMap = this.sortByValue(heads);
+			Set<Entry<ICell, List<ICell>>> sortedSet = sortedMap.entrySet();
 
-		Map<ICell, List<ICell>> paths = new HashMap<ICell, List<ICell>>();
-
-		paths.put(start, path);
-
-		for (int i = 0; i < heads.size(); i++) {
-			ICell head = heads.get(i);
+			ICell head = sortedSet.iterator().next().getKey();
 
 			if (head.getPathPosX() == PathType.OPEN) {
 				for (ICell cell : this.cellsCanBeUsed) {
 					if (cell.getX() == head.getX() + 1
 							&& cell.getY() == head.getY()) {
-						if (!paths.containsKey(cell)) {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							paths.put(cell, copy);
-							heads.add(cell);
+
+						if (!heads.containsKey(cell)) {
+
+							List<ICell> path = new ArrayList<ICell>(
+									heads.get(head));
+							path.add(cell);
+							heads.put(cell, path);
 
 						} else {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							List<ICell> oldPath = paths.get(cell);
-							double oldPathCost = calculateCost(oldPath);
-							double newPathCost = calculateCost(newPath);
-							if (newPathCost < oldPathCost) {
-								paths.put(cell, copy);
+							List<ICell> oldPath = new ArrayList<ICell>(
+									heads.get(cell));
+							List<ICell> newPath = new ArrayList<ICell>(
+									heads.get(head));
+							newPath.add(cell);
+							if (calculateCost(newPath) < calculateCost(oldPath)) {
+								heads.put(cell, newPath);
 							}
 						}
 						break;
 					}
+					
 				}
+
 			}
 
 			if (head.getPathPosY() == PathType.OPEN) {
 				for (ICell cell : this.cellsCanBeUsed) {
 					if (cell.getX() == head.getX()
 							&& cell.getY() == head.getY() + 1) {
-						if (!paths.containsKey(cell)) {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							paths.put(cell, copy);
-							heads.add(cell);
+
+						if (!heads.containsKey(cell)) {
+							List<ICell> path = new ArrayList<ICell>(
+									heads.get(head));
+							path.add(cell);
+							heads.put(cell, path);
 
 						} else {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							List<ICell> oldPath = paths.get(cell);
-							double oldPathCost = calculateCost(oldPath);
-							double newPathCost = calculateCost(newPath);
-							if (newPathCost < oldPathCost) {
-								paths.put(cell, copy);
+							List<ICell> oldPath = new ArrayList<ICell>(
+									heads.get(cell));
+							List<ICell> newPath = new ArrayList<ICell>(
+									heads.get(head));
+							newPath.add(cell);
+							if (calculateCost(newPath) < calculateCost(oldPath)) {
+								heads.put(cell, newPath);
 							}
+
 						}
 						break;
 					}
+					
 				}
 			}
 
+			System.out.println(head);
+			System.out.println(this.cellsCanBeUsed);
 			if (head.getPathNegX() == PathType.OPEN) {
+				System.out.println(0);
 				for (ICell cell : this.cellsCanBeUsed) {
+					System.out.println(cell);
 					if (cell.getX() == head.getX() - 1
 							&& cell.getY() == head.getY()) {
-						if (!paths.containsKey(cell)) {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							paths.put(cell, copy);
-							heads.add(cell);
+						System.out.println(1);
+						if (!heads.containsKey(cell)) {
+							System.out.println(2);
+							List<ICell> path = new ArrayList<ICell>(
+									heads.get(head));
+							path.add(cell);
+							heads.put(cell, path);
 
 						} else {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							List<ICell> oldPath = paths.get(cell);
-							double oldPathCost = calculateCost(oldPath);
-							double newPathCost = calculateCost(newPath);
-							if (newPathCost < oldPathCost) {
-								paths.put(cell, copy);
+							System.out.println(3);
+							List<ICell> oldPath = new ArrayList<ICell>(
+									heads.get(cell));
+							List<ICell> newPath = new ArrayList<ICell>(
+									heads.get(head));
+							newPath.add(cell);
+							if (calculateCost(newPath) < calculateCost(oldPath)) {
+								heads.put(cell, newPath);
 							}
+
 						}
 						break;
 					}
+					
 				}
+
 			}
 
 			if (head.getPathNegY() == PathType.OPEN) {
 				for (ICell cell : this.cellsCanBeUsed) {
 					if (cell.getX() == head.getX()
 							&& cell.getY() == head.getY() - 1) {
-						if (!paths.containsKey(cell)) {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							paths.put(cell, copy);
-							heads.add(cell);
+
+						if (!heads.containsKey(cell)) {
+							List<ICell> path = new ArrayList<ICell>(
+									heads.get(head));
+							path.add(cell);
+							heads.put(cell, path);
 
 						} else {
-							List<ICell> newPath = paths.get(head);
-							List<ICell> copy = new ArrayList<ICell>(newPath);
-							copy.add(cell);
-							List<ICell> oldPath = paths.get(cell);
-							double oldPathCost = calculateCost(oldPath);
-							double newPathCost = calculateCost(newPath);
-							if (newPathCost < oldPathCost) {
-								paths.put(cell, copy);
+							List<ICell> oldPath = new ArrayList<ICell>(
+									heads.get(cell));
+							List<ICell> newPath = new ArrayList<ICell>(
+									heads.get(head));
+							newPath.add(cell);
+							if (calculateCost(newPath) < calculateCost(oldPath)) {
+								heads.put(cell, newPath);
 							}
+
 						}
 						break;
 					}
+					
 				}
 			}
 
-			heads.remove(i);
-			i--;
-			// paths.remove(head);
+			finished.put(head, heads.get(head));
+			this.cellsCanBeUsed.remove(head);
+			heads.remove(head);
 
 		}
 
+
 		double minCost = Double.MAX_VALUE;
-		List<ICell> mimCostPath = new ArrayList<ICell>();
-		for (ICell cell : unfinishedCells) {
-			List<ICell> p = paths.get(cell);
-			double cost = calculateCost(p);
-			if (cost < minCost) {
-				minCost = cost;
-				mimCostPath = p;
+		List<ICell> minCostPath = new ArrayList<ICell>();
+		for (ICell c : unfinishedCells) {
+			List<ICell> path = finished.get(c);
+			if (calculateCost(path) < minCost) {
+				minCostPath = path;
+				minCost = calculateCost(path);
 			}
 		}
 
-		return mimCostPath;
+		return minCostPath;
 
 	}
 
-	public double calculateCost(List<ICell> path) {
+	public static double calculateCost(List<ICell> path) {
 		double pathCost = 0;
 
 		for (int i = 0; i < path.size() - 1; i++) {
 			ICell current = path.get(i);
 			ICell next = path.get(i + 1);
-			double moveCost = (current.getTraverseCost() + next.getTraverseCost())/2;
-
+			double moveCost = (current.getTraverseCost() + next
+					.getTraverseCost()) / 2.0;
 			pathCost += moveCost;
 		}
 

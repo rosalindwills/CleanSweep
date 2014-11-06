@@ -1,9 +1,4 @@
 package com.se459.modules.models;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Log;
@@ -13,7 +8,7 @@ public class Vacuum implements Runnable {
 
 	private Observer observer;
 
-	public static long delay = 100;
+	public static long delay = 75;
 
 	private ICell current;
 	private ICell next;

@@ -61,6 +61,19 @@ public class VacuumMemory {
 		return cells;
 	}
 	
+	public void setTraversed(ICell cell){
+		for (ICell c : finishedCells) {
+			if (c.equals(cell)) {
+				c.setTraversed();
+			}
+		}
+		for (ICell c : unfinishedCells) {
+			if (c.equals(cell)) {
+				c.setTraversed();
+			}
+		}
+	}
+	
 	public List<ICell> getAllFinishedCells() {
 		return this.finishedCells;
 	}

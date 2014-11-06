@@ -254,7 +254,7 @@ public class NavigationLogic {
 	public double moveTo(ICell destination) {
 
 		if (this.isReturning) {
-			destination.setTraversed();
+			this.memory.setTraversed(destination);
 			double batteryUnitDrain = (this.currentPosition.getTraverseCost() + destination
 					.getTraverseCost()) / 2;
 			this.currentPosition = destination;
@@ -262,7 +262,7 @@ public class NavigationLogic {
 			return batteryUnitDrain;
 
 		} else {
-			destination.setTraversed();
+			this.memory.setTraversed(destination);
 
 			double batteryUnitDrain;
 			if (this.currentPosition.equals(destination)) {
