@@ -78,6 +78,10 @@ public class PathFinder {
 		return sortedMap;
 	}
 
+	// given a start cell, and a collection of unfinished cells,
+	// using Dijkstra's shortest paths algorithm to calculate the shortest paths
+	// from start cell to each unfinished cell,
+	// and then pick a shortest one among all shortest paths.
 	public List<ICell> findPath(ICell start, List<ICell> unfinishedCells) {
 
 		Map<ICell, List<ICell>> finished = new Hashtable<ICell, List<ICell>>();
@@ -116,7 +120,7 @@ public class PathFinder {
 						}
 						break;
 					}
-					
+
 				}
 
 			}
@@ -145,7 +149,7 @@ public class PathFinder {
 						}
 						break;
 					}
-					
+
 				}
 			}
 
@@ -179,7 +183,7 @@ public class PathFinder {
 						}
 						break;
 					}
-					
+
 				}
 
 			}
@@ -208,7 +212,7 @@ public class PathFinder {
 						}
 						break;
 					}
-					
+
 				}
 			}
 
@@ -217,7 +221,6 @@ public class PathFinder {
 			heads.remove(head);
 
 		}
-
 
 		double minCost = Double.MAX_VALUE;
 		List<ICell> minCostPath = new ArrayList<ICell>();
@@ -233,6 +236,7 @@ public class PathFinder {
 
 	}
 
+	// calculate then cost to travel along a path
 	public static double calculateCost(List<ICell> path) {
 		double pathCost = 0;
 

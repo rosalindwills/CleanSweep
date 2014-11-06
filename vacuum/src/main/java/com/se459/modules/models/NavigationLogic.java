@@ -17,8 +17,14 @@ public class NavigationLogic {
 	private ICell currentPosition;
 	private VacuumMemory memory;
 
+	// path that sweep is currently traveling along
+	// could be a return path, or a path to a unfinished cell, which is not
+	// adjacent to the current cell
+	// if this list is empty, it means no path to follow currently,  
+	// vacuum is exploring the cells around.
 	private List<ICell> currentTravelingPath = new ArrayList<ICell>();
-	
+
+	// keep track of a return path
 	private List<ICell> returnPath = new ArrayList<ICell>();
 
 	private int currentFloor = 1;
@@ -28,15 +34,14 @@ public class NavigationLogic {
 	private double returnCost = 0;
 
 	private boolean isReturning = false;
-	
+
 	private Log log;
 
 	public ICell readCurrentCell(int floor) {
 		return currentPosition;
 	}
 
-	public NavigationLogic(ISensor sensor, int floor,
-			VacuumMemory vacuumMemory) {
+	public NavigationLogic(ISensor sensor, int floor, VacuumMemory vacuumMemory) {
 		this.currentPosition = sensor.getStartPoint(this.currentFloor);
 		this.sensor = sensor;
 		this.memory = vacuumMemory;
@@ -55,32 +60,40 @@ public class NavigationLogic {
 		return this.returnCost;
 	}
 
+	// if can take another move(return cost from next cell <= charge remaining -
+	// next move cost ),
+	// return the next cell that the sweep will move to.
+	// if cannot take another move, calculate return path, set return path as
+	// current traveling path, and
+	// return the first cell in the return path.
 	public ICell checkAndGetNext(double remaining) {
 
+		// sweep is returning
 		if (this.isReturning) {
 			return this.currentTravelingPath.remove(0);
 
 		} else {
-			// vacuum finds out its done 
-			if(memory.getAllUnfinishedCells().isEmpty()){
+			// vacuum finds out its done
+			if (memory.getAllUnfinishedCells().isEmpty()) {
 				// vacuum needs to return to the charging point
-				if(!this.currentPosition.equals(this.sensor.getStartPoint(this.currentFloor))){
+				if (!this.currentPosition.equals(this.sensor
+						.getStartPoint(this.currentFloor))) {
 					this.isReturning = true;
 					this.currentTravelingPath = this.returnPath;
 					this.currentTravelingPath.remove(0);
 					return this.currentTravelingPath.remove(0);
 				}
-				// vacuum has already returned to the charging point. 
-				else{
+				// vacuum has already returned to the charging point.
+				else {
 					return null;
-					
+
 				}
 			}
 
-			// vacuum is traveling along a path. 
-			// The path could be a return path to the charging point, 
-			// or a path to the next unfinished cell, which is not adjacent to current cell.
-			// 
+			// vacuum is traveling along a path.
+			// The path could be a return path to the charging point,
+			// or a path to the next unfinished cell, which is not adjacent to
+			// current cell.
 			if (!this.currentTravelingPath.isEmpty()) {
 				ICell cell = this.currentTravelingPath.get(0);
 				double nextMoveCost = (cell.getTraverseCost() + this.currentPosition
@@ -90,7 +103,7 @@ public class NavigationLogic {
 
 				PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
 				List<ICell> returnPathFromNext = pf.findPath(cell, destination);
-				double returnCostFromNext = pf
+				double returnCostFromNext = PathFinder
 						.calculateCost(returnPathFromNext);
 
 				if (remaining - nextMoveCost >= returnCostFromNext) {
@@ -102,9 +115,9 @@ public class NavigationLogic {
 					return this.returnPath.remove(0);
 				}
 
-			} 
-			
-			// vacuum is exploring the cells around. 
+			}
+
+			// no path to follow along, vacuum is exploring the cells around.
 			else {
 				ICell posXCell = sensor.getPosXCell(currentFloor,
 						currentPosition.getX(), currentPosition.getY());
@@ -126,8 +139,10 @@ public class NavigationLogic {
 				boolean negY = sensor.getNegYPathType(currentFloor,
 						currentPosition.getX(), currentPosition.getY()) == PathType.OPEN;
 
-				// vacuum realizes all cells around are either obstacles or finished.
-				// now it needs to go to a unfinished cell, which is not adjacent to the current cell.
+				// vacuum realizes all cells around are either obstacles or
+				// finished.
+				// now it needs to go to a unfinished cell, which is not
+				// adjacent to the current cell.
 				if ((!posX || !this.memory.ifUnfinished(posXCell))
 						&& (!posY || !this.memory.ifUnfinished(posYCell))
 						&& (!negX || !this.memory.ifUnfinished(negXCell))
@@ -140,8 +155,8 @@ public class NavigationLogic {
 					}
 					return cell;
 
-				} 	
-				// pick a adjacent cell to go 
+				}
+				// pick a adjacent cell to go
 				else {
 					// test if posx is open and unfinished
 					if (posX && this.memory.ifUnfinished(posXCell)) {
@@ -156,7 +171,7 @@ public class NavigationLogic {
 								this.memory.getAllKnownCells());
 						List<ICell> returnPathFromNext = pf.findPath(posXCell,
 								destination);
-						double returnCostFromNext = pf
+						double returnCostFromNext = PathFinder
 								.calculateCost(returnPathFromNext);
 
 						if (remaining - nextMoveCost >= returnCostFromNext) {
@@ -176,7 +191,7 @@ public class NavigationLogic {
 								this.memory.getAllKnownCells());
 						List<ICell> returnPathFromNext = pf.findPath(negXCell,
 								destination);
-						double returnCostFromNext = pf
+						double returnCostFromNext = PathFinder
 								.calculateCost(returnPathFromNext);
 
 						if (remaining - nextMoveCost >= returnCostFromNext) {
@@ -196,7 +211,7 @@ public class NavigationLogic {
 								this.memory.getAllKnownCells());
 						List<ICell> returnPathFromNext = pf.findPath(posYCell,
 								destination);
-						double returnCostFromNext = pf
+						double returnCostFromNext = PathFinder
 								.calculateCost(returnPathFromNext);
 
 						if (remaining - nextMoveCost >= returnCostFromNext) {
@@ -216,7 +231,7 @@ public class NavigationLogic {
 								this.memory.getAllKnownCells());
 						List<ICell> returnPathFromNext = pf.findPath(negYCell,
 								destination);
-						double returnCostFromNext = pf
+						double returnCostFromNext = PathFinder
 								.calculateCost(returnPathFromNext);
 
 						if (remaining - nextMoveCost >= returnCostFromNext) {
@@ -224,8 +239,10 @@ public class NavigationLogic {
 						}
 					}
 
-					// All cells around are either obstacles or finished or we don't have 
-					// enough charges to go to that cell, so we need to return now.
+					// All cells around are either obstacles or finished or we
+					// don't have
+					// enough charges to go to that cell, so we need to return
+					// now.
 					this.isReturning = true;
 					this.currentTravelingPath = this.returnPath;
 					this.currentTravelingPath.remove(0);
@@ -239,6 +256,7 @@ public class NavigationLogic {
 
 	}
 
+	// check if can do vacuum one more time on a cell
 	public boolean checkIfCanDoVacuum(double remaining, ICell cell) {
 		double nextVacuumCost = cell.getVacuumCost();
 		if (remaining - nextVacuumCost < this.returnCost) {
@@ -251,8 +269,8 @@ public class NavigationLogic {
 
 	}
 
+	// given a target cell, go to it
 	public double moveTo(ICell destination) {
-
 		if (this.isReturning) {
 			this.memory.setTraversed(destination);
 			double batteryUnitDrain = (this.currentPosition.getTraverseCost() + destination
@@ -305,29 +323,41 @@ public class NavigationLogic {
 
 	}
 
+	// calculate a path to next unfinished cell, which is not adjacent to the
+	// current cell
+	// call this method when the sweep finds out all cells around are either
+	// obstacles or finished.
 	private void findPathToNextKnownCell() {
 
 		PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
-
-		this.currentTravelingPath = pf.findPath(this.currentPosition, this.memory.getAllUnfinishedCells());
+		this.currentTravelingPath = pf.findPath(this.currentPosition,
+				this.memory.getAllUnfinishedCells());
 		this.currentTravelingPath.remove(0);
 	}
 
+	// calculate a return path to the charging point from current cell
 	public void calculateReturnPath() {
 		PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
 		List<ICell> destination = new ArrayList<ICell>();
 		destination.add(sensor.getStartPoint(this.currentFloor));
 		this.returnPath = pf.findPath(this.currentPosition, destination);
-		this.returnCost = pf.calculateCost(this.returnPath);
+		this.returnCost = PathFinder.calculateCost(this.returnPath);
 	}
 
+	// when the sweep goes back to charging point, call this method to reset.
 	public void reset() {
 		this.isReturning = false;
 	}
-	
-	public void returnNow(){
+
+	// call this method to return now(when the sweep finds out no enough charge
+	// to do vacuum one more time, call this method)
+	public void returnNow() {
 		this.currentTravelingPath = this.returnPath;
 		this.isReturning = true;
+	}
+
+	public boolean ifReturning() {
+		return this.isReturning;
 	}
 
 }

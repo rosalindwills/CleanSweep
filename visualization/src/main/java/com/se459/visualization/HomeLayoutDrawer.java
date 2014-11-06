@@ -49,10 +49,11 @@ class HomeLayoutPanel extends JPanel {
 
 		for (int x = floor.getMinX(); x <= floor.getMaxX(); ++x) {
 			for (int y = floor.getMinY(); y <= floor.getMaxY(); ++y) {
+
 				ICell cell = floor.getCell(x, y);
 
 				if (null != cell) {
-					// draw cells
+					// known and traversed
 					if (vacuum.getMemory().getAllKnownCells().contains(cell)) {
 						if (cell.isTraversed()) {
 							g2d.setColor(getSurfaceColor(cell,
@@ -65,6 +66,7 @@ class HomeLayoutPanel extends JPanel {
 
 					}
 
+					// known but not traversed
 					if (vacuum.getMemory().getAllUnfinishedCells()
 							.contains(cell)) {
 						g2d.setStroke(new BasicStroke(2));
@@ -72,22 +74,13 @@ class HomeLayoutPanel extends JPanel {
 						g2d.drawRect(x * xMult + xMult / 3, y * yMult + yMult
 								/ 3, xMult / 3, yMult / 3);
 					}
-					// if (vacuum.getMemory().getAllKnownAndFinished()
-					// .contains(cell)) {
-					// g2d.setStroke(new BasicStroke(2));
-					// g2d.setColor(Color.gray);
-					// g2d.fillRect(x * xMult + xMult / 3, y * yMult + yMult
 
-					// / 3, xMult / 3, yMult / 3);
-					// }
-
-					// draw walls
+					// draw wall
 					g2d.setStroke(new BasicStroke(3));
 					g2d.setColor(Color.black);
 					if (cell.getPathNegX() != PathType.OPEN) {
 						g2d.drawLine(x * xMult, y * yMult, x * xMult, y * yMult
 								+ yMult);
-
 					}
 					if (cell.getPathPosX() != PathType.OPEN) {
 						g2d.drawLine(x * xMult + xMult, y * yMult, x * xMult
@@ -111,17 +104,18 @@ class HomeLayoutPanel extends JPanel {
 			}
 
 			if (vacuum.on) {
+				// draw current target cell
 				g2d.setColor(Color.white);
 				g2d.drawOval(vacuum.GetDestinationX() * xMult
 						+ (int) (xMult / 2.6), vacuum.GetDestinationY() * yMult
 						+ (int) (yMult / 2.6), xMult / 4, yMult / 4);
 
-				// draw the vacuum
+				// draw current cell (vacuum). green means vacuum is on
 				g2d.setColor(Color.green);
 				g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY()
 						* yMult + yMult / 4, xMult / 2, yMult / 2);
 			} else {
-				// draw the vacuum
+				// draw the vacuum. red means vacuum is off
 				g2d.setColor(Color.red);
 				g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY()
 						* yMult + yMult / 4, xMult / 2, yMult / 2);
@@ -182,8 +176,6 @@ class HomeLayoutPanel extends JPanel {
 
 public class HomeLayoutDrawer extends JFrame implements Observer {
 
-	boolean pause = false;
-
 	ISensor sim = SensorSimulator.getInstance();
 	IHomeLayout layout;
 	Vacuum vacuum;
@@ -218,7 +210,6 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 			vacuum = Vacuum.getInstance(sim, 1, 0, 0);
 
 		} catch (SAXException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -283,18 +274,6 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 
 	}
 
-	private static ICell GetChargingStationLocation(IFloor floor) {
-		for (int x = floor.getMinX(); x < floor.getMaxX(); ++x) {
-			for (int y = floor.getMinY(); y < floor.getMaxY(); ++y) {
-				if (floor.getCell(x, y).getIsChargingStation()) {
-					return floor.getCell(x, y);
-				}
-			}
-		}
-
-		return null;
-	}
-
 	private int calculateCellSize(int cols, int rows, int maximumWidth,
 			int maximumHeight, int maximumCellSize, int minimumCellSize) {
 
@@ -322,14 +301,19 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 	public void update() {
 
 		if (layoutPanel.vacuum.on) {
-			// outputCurrentLayoutPanel();
 			statusPanel.removeAll();
 			String dirtStatusStr = "DirtUnits: "
 					+ layoutPanel.vacuum.getDirtUnits();
 			String chargeStatusStr = "ChargeRemaining: "
 					+ layoutPanel.vacuum.getChargeRemaining();
-			String pathCost = "ReturnCost: "
-					+ layoutPanel.vacuum.getNavigationLogic().getReturnCost();
+			String pathCost= "";
+			if(layoutPanel.vacuum.getNavigationLogic().ifReturning()){
+				pathCost = "ReturnCost: returning";			
+			}else{
+				pathCost = "ReturnCost: "
+						+ layoutPanel.vacuum.getNavigationLogic().getReturnCost();
+			}
+			
 			String dispaly = dirtStatusStr + "    " + chargeStatusStr + "    "
 					+ pathCost;
 
@@ -339,8 +323,9 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 			statusPanel.validate();
 			layoutPanel.repaint();
 			repaint();
-
 		}
+		outputCurrentLayoutPanel();
+
 	}
 
 	@Override

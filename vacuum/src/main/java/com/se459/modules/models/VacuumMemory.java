@@ -8,17 +8,15 @@ import com.se459.util.log.LogFactory;
 
 public class VacuumMemory {
 
+	// known and traversed and clean 
 	private ArrayList<ICell> finishedCells = new ArrayList<ICell>();
+	// either known but not traversed OR known, traversed but not clean
 	private ArrayList<ICell> unfinishedCells = new ArrayList<ICell>();
-	
-	public static final int UNKNOWN = 0;
-	public static final int  UNFINISHED = 1;
-	public static final int FINISHED =2;
 
+	// when the sweep goes to a new cell, it looks around and remembers new cells.
 	public void addNewCell(ICell cell) {
 		if (!unfinishedCells.contains(cell)
 				&& !finishedCells.contains(cell)) {
-				
 			unfinishedCells.add(cell);
 		}
 	}
@@ -32,7 +30,6 @@ public class VacuumMemory {
 			unfinishedCells.remove(cell);
 			finishedCells.add(cell);
 		}
-
 	}
 
 	public void addFinishedCells(ICell cell) {
@@ -46,6 +43,8 @@ public class VacuumMemory {
 	}
 	
 
+	// all known cells: 1. known but not traversed.  2 known, traversed but not clean
+	// 3. known, traversed and clean
 	public List<ICell> getAllKnownCells() {
 		List<ICell> cells = new ArrayList<ICell>();
 		for (ICell c : finishedCells) {
@@ -74,42 +73,9 @@ public class VacuumMemory {
 		}
 	}
 	
+	// cells that are known, traversed and clean.
 	public List<ICell> getAllFinishedCells() {
 		return this.finishedCells;
 	}
-
-	public void output() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < 10; j++) {
-				boolean flag = false;
-				;
-				for (int k = 0; k < finishedCells.size(); k++) {
-					if (finishedCells.get(k).getX() == j
-							&& finishedCells.get(k).getY() == i) {
-						sb.append("Fin");
-						flag = true;
-						break;
-					}
-				}
-				for (int k = 0; k < unfinishedCells.size(); k++) {
-					if (unfinishedCells.get(k).getX() == j
-							&& unfinishedCells.get(k).getY() == i) {
-						sb.append("Knw");
-						flag = true;
-						break;
-					}
-				}
-				if (!flag) {
-					sb.append("Unk");
-				}
-				sb.append("   ");
-			}
-			sb.append("\n");
-		}
-
-	}
-	
-	
 
 }
