@@ -1,41 +1,34 @@
 package com.se459.modules.models;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
-import com.se459.sensor.models.SensorSimulator;
 import com.se459.util.log.Log;
 import com.se459.util.log.LogFactory;
 
 public class Vacuum implements Runnable {
 
-	public static long delay = 300;
+	private Observer observer;
+
+	public static long delay = 75;
 
 	private ICell current;
 	private ICell next;
 
 	private VacuumMemory memory;
 	private NavigationLogic navLogic;
-        private SurfaceType previousSurfaceType = SurfaceType.BAREFLOOR;
+	private ISensor sensor;
+	private int currentFloor;
 
-	public volatile boolean on;
+	public volatile boolean on = false;
 
 	Log log = LogFactory.newFileLog();
 	Log scnLog = LogFactory.newScreenLog();
 
-	private int dirtUnits;
-	final int dirtCapacity = 50;
+	private int dirtUnits = 0;
+	final double dirtCapacity = 20;
 
 	double chargeRemaining;
-	final double chargeCapacity = 50.0;
+	final double chargeCapacity = 64;
 
-	// for testing, variables below should be removed finally.
-	public int currentReturnPathNum = 0;
-	public int returnCost = 0;
-	public List<ICell> returnPath = new ArrayList<ICell>();
 	// the thread the vacuum is running in
 	Thread thread;
 
@@ -48,21 +41,17 @@ public class Vacuum implements Runnable {
 			int yPosition) {
 		chargeRemaining = chargeCapacity;
 		dirtUnits = 0;
+		this.sensor = sensorSimulator;
+		this.currentFloor = floor;
 
 		scnLog.append("In vacuum constructor");
 
 		memory = new VacuumMemory();
-		navLogic = new NavigationLogic(sensorSimulator, floor, memory, scnLog);
-	}
+		navLogic = new NavigationLogic(sensorSimulator, floor, memory);
 
-	public void Start() {
 		on = true;
 
-		thread = new Thread(this);
-		thread.start();
-
-		scnLog.append("Start Vacuum...");
-		log.append("Started the vacuum");
+		current = sensor.getStartPoint(this.currentFloor);
 	}
 
 	public void Stop() {
@@ -79,222 +68,66 @@ public class Vacuum implements Runnable {
 	}
 
 	public void run() {
-		memory.output();
-		this.current = navLogic.readCurrentCell();
 		memory.addNewCell(current);
-		this.navLogic.moveTo(current);
-                DecreaseChargeBySurfaceTypeAfterMove(current);
+		navLogic.moveTo(current);
+		this.next = current;
+		this.observer.update();
+		sleep();
 		Sweep(current);
-		memory.output();
-		this.next = null;
+
 		while (on) {
-			if (next != null) {
-				this.navLogic.moveTo(this.next);
-				sleep();
+			if (!next.equals(current)) {
+				double batteryUnitDrain = this.navLogic.moveTo(this.next);
+				this.chargeRemaining -= batteryUnitDrain;
 				this.current = this.navLogic.readCurrentCell();
-                                DecreaseChargeBySurfaceTypeAfterMove(current);
+				if (this.current.equals(this.sensor
+						.getStartPoint(this.currentFloor))) {
+					this.observer.update();
+					this.observer.sendNotification("Returned! Charging Left: "
+							+ this.chargeRemaining);
+					this.chargeRemaining = this.chargeCapacity;
+					this.navLogic.reset();
+					if(this.dirtUnits == this.dirtCapacity){
+						this.observer.sendNotification("Empty me!");
+						this.dirtUnits = 0;
+					}
+				}
+				this.observer.update();
+				sleep();
 				Sweep(current);
 				memory.output();
 			}
-
-			this.next = this.navLogic.findNext();
-
-			
-		}
-	}
-
-	private void travelAlonePath() {
-
-	}
-
-	private boolean CheckIfFinishedCleaning() {
-		// @TODO add logic to check this
-		if (false) {
-			scnLog.append("Finished cleaning.");
-			return true;
-		}
-		return false;
-	}
-
-	// private boolean CheckIfOutOfPower() {
-	//
-	// ICell currentCell = sim.readCell(1, navLogic.currentPosition.x,
-	// navLogic.currentPosition.y);
-	//
-	// List<ICell> cells = new ArrayList<ICell>(this.memory.knownCells);
-	// if(!cells.contains(currentCell)){
-	// cells.add(currentCell);
-	// }
-	//
-	// PathFinder finder = new PathFinder(cells);
-	//
-	// List<List<ICell>> paths = finder.findAllPath(currentCell.getX(),
-	// currentCell.getY(),
-	// this.memory.FindChargingCell().getX(),this.memory.FindChargingCell().getY());
-	// this.currentReturnPathNum = paths.size();
-	//
-	// if (paths.size() == 0){
-	// return false;
-	// }
-	//
-	// log.append("Paths found: " +paths.size());
-	//
-	// int minimumChargeCost = Integer.MAX_VALUE;
-	// int minimumChargeCostPathNum = 0;
-	//
-	// for(int i =0; i < paths.size(); i++){
-	// int pathChargeCost = 0;
-	// List<ICell> path = paths.get(i);
-	// for (ICell cell : path){
-	// if(!(cell.getX() == navLogic.currentPosition.x && cell.getY() ==
-	// navLogic.currentPosition.y)){
-	// if (cell.getSurfaceType() == SurfaceType.BAREFLOOR) {
-	// pathChargeCost += 1;
-	// } else if (cell.getSurfaceType() == SurfaceType.LOWPILE) {
-	// pathChargeCost += 2;
-	// } else if (cell.getSurfaceType() == SurfaceType.HIGHPILE) {
-	// pathChargeCost += 3;
-	// }
-	// }
-	//
-	// if (pathChargeCost >= minimumChargeCost){
-	// break;
-	// }
-	// }
-	// if (pathChargeCost < minimumChargeCost){
-	// minimumChargeCost = pathChargeCost;
-	// minimumChargeCostPathNum = i;
-	// }
-	// }
-	//
-	// returnCost = minimumChargeCost;
-	//
-	// /*
-	// * THIS IS THE RETURN PATH
-	// *
-	// */
-	// returnPath = paths.get(minimumChargeCostPathNum);
-	//
-	// return this.chargeRemaining <= minimumChargeCost;
-	//
-	//
-	// }
-	//
-	// private boolean CheckIfFullOfDirt() {
-	// if (dirtUnits >= dirtCapacity) {
-	// scnLog.append("Dirt capacity reached." + getStatus());
-	// return true;
-	// }
-	// return false;
-	// }
-	//
-	// private void processReturnToChargingStation() {
-	// scnLog.append("Recharging to full capacity." + getStatus());
-	// chargeRemaining = chargeCapacity;
-	// if (dirtUnits >= dirtCapacity) {
-	// // scnLog.append("Press any key to empty dirt.");
-	// //try
-	// {
-	// //System.in.read();
-	// EmptyDirt();
-	// Charge();
-	// } // catch (Exception e) {}
-	// }
-	// }
-	//
-	// private void EmptyDirt()
-	// {
-	// scnLog.append("Emptying dirt.");
-	// dirtUnits = 0;
-	// }
-	//
-	private void Sweep(ICell cell) {
-		if (dirtUnits < dirtCapacity) {
-
-
-			while (cell.getDirtUnits() != 0 && chargeRemaining > 0) {
-				cell.cleanCell();
-                                DecreaseChargeRemainingBySurfaceTypeAfterClean(cell);
-				sleep();
+			this.next = this.navLogic.checkAndGetNext(this.chargeRemaining);
+			// when navlgoic returns a null, no next position to go, all done!
+			if (next == null) {
+				break;
 			}
-			
-			memory.becomeFinished(current);
-
+			this.observer.update();
+			sleep();
 		}
+
+		this.observer.sendNotification("Done");
 	}
 
-        private void DecreaseChargeRemainingBySurfaceTypeAfterClean(ICell cell){
-
-                 scnLog.append("After Clean - Charge Remaining: " + chargeRemaining);
-
-                 if (cell.getSurfaceType() == SurfaceType.BAREFLOOR){
-                     if (chargeRemaining >= SurfaceType.BAREFLOOR.getValue()){
-                         chargeRemaining -= SurfaceType.BAREFLOOR.getValue();     
-                     }
-                     else {
-                         chargeRemaining = 0;
-                     }
-                 }
-                 else if (cell.getSurfaceType() == SurfaceType.LOWPILE){
-                     if (chargeRemaining >= SurfaceType.LOWPILE.getValue()){
-                         chargeRemaining -= SurfaceType.LOWPILE.getValue();     
-                     }
-                     else {
-                         chargeRemaining = 0;
-                     }
-                 }
-                 else if (cell.getSurfaceType() == SurfaceType.HIGHPILE){
-                     if (chargeRemaining >= SurfaceType.HIGHPILE.getValue()){
-                         chargeRemaining -= SurfaceType.HIGHPILE.getValue();     
-                     }
-                     else {
-                         chargeRemaining = 0;
-                     }
-                 } 
-        }  
-
-        private void DecreaseChargeBySurfaceTypeAfterMove(ICell cell){
-                 scnLog.append("After Move - Charge Remaining: " + chargeRemaining);
-                 
-                 double chargeUnitsToDecrease = ((previousSurfaceType.getValue() + cell.getSurfaceType().getValue())/2.0);
-
-                
-                 scnLog.append("After Move - previous Surface Type: " + previousSurfaceType.getValue());
-                 scnLog.append("After Move - current Surface Type: " + cell.getSurfaceType().getValue());
-                 scnLog.append("After Move - Decrease charge by " + chargeUnitsToDecrease + " unit(s)");
-
-                 if (chargeRemaining >= chargeUnitsToDecrease){
-                     chargeRemaining -= chargeUnitsToDecrease;
-                 }
-                 else {
-                     chargeRemaining = 0;
-                 }
-
-                 previousSurfaceType = cell.getSurfaceType();
-        }
-
-	//
-	// private void Charge()
-	// {
-	// chargeRemaining = chargeCapacity;
-	// }
-
-	// pick the next destination for the vacuum to go to
-	// private void SetNextDestination()
-	// {
-	// if(CheckIfOutOfPower())
-	// {
-	// navLogic.SetDestinationToBaseStation();
-	// }
-	// else if(dirtUnits == dirtCapacity)
-	// {
-	// navLogic.SetDestinationToBaseStation();
-	// }
-	// else
-	// {
-	// navLogic.SetPathToDirtyOrUnknown();
-	// }
-	// }
+	private void Sweep(ICell cell) {
+		while (!cell.isClean()) {
+			if (this.navLogic.checkIfCanDoVacuum(chargeRemaining, cell)) {
+				if (this.dirtUnits < this.dirtCapacity) {
+					cell.cleanCell();
+					this.chargeRemaining -= cell.getVacuumCost();
+					this.dirtUnits += 1;
+					this.observer.update();
+					sleep();
+				} else {
+					this.navLogic.returnNow();
+					return;
+				}
+			} else {
+				return;
+			}
+		}
+		memory.becomeFinished(current);
+	}
 
 	public int GetX() {
 		return this.current.getX();
@@ -324,12 +157,24 @@ public class Vacuum implements Runnable {
 	public double getChargeRemaining() {
 		return chargeRemaining;
 	}
-	
-	private void sleep(){
+
+	private void sleep() {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public VacuumMemory getMemory() {
+		return this.memory;
+	}
+
+	public NavigationLogic getNavigationLogic() {
+		return this.navLogic;
+	}
+
+	public void registerObserver(Observer ob) {
+		this.observer = ob;
 	}
 }
