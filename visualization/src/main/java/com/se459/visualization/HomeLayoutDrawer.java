@@ -101,7 +101,7 @@ class HomeLayoutPanel extends JPanel {
 				}
 			}
 
-			if (vacuum.on) {
+			if (vacuum.getIsOn()) {
 				// draw current target cell
 				g2d.setColor(Color.white);
 				g2d.drawOval(vacuum.GetDestinationX() * xMult
@@ -122,13 +122,24 @@ class HomeLayoutPanel extends JPanel {
 		}
 
 		// draw return path
-		if(null != vacuum.getNavigationLogic().getReturnPath())
-		{
+		if (null != vacuum.getNavigationLogic().getReturnPath()) {
+			g2d.setColor(Color.red);
+			
 			for (ICell c : vacuum.getNavigationLogic().getReturnPath()) {
-				g2d.setColor(Color.red);
-				g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY() * yMult
-						+ yMult * 4 / 10, xMult / 5, yMult / 5);
-	
+				g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY()
+						* yMult + yMult * 4 / 10, xMult / 5, yMult / 5);
+
+			}
+		}
+		
+		// draw the current path
+		if (!vacuum.getNavigationLogic().getIsReturning() && null != vacuum.getNavigationLogic().getCurrentPath()) {
+			g2d.setColor(Color.CYAN);
+			
+			for (ICell c : vacuum.getNavigationLogic().getCurrentPath()) {
+				g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY()
+						* yMult + yMult * 4 / 10, xMult / 5, yMult / 5);
+
 			}
 		}
 	}
@@ -301,22 +312,23 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 
 	public void update() {
 
-		if (layoutPanel.vacuum.on) {
+		if (layoutPanel.vacuum.getIsOn()) {
 			statusPanel.removeAll();
 			String dirtStatusStr = "DirtUnits: "
 					+ layoutPanel.vacuum.getDirtUnits();
 			String chargeStatusStr = "ChargeRemaining: "
 					+ layoutPanel.vacuum.getChargeRemaining();
-			String pathCost= "";
-			if(layoutPanel.vacuum.getNavigationLogic().ifReturning()){
-				pathCost = "ReturnCost: returning";			
-			}else{
-				pathCost = "ReturnCost: "
-						+ layoutPanel.vacuum.getNavigationLogic().getReturnCost();
+			String returnPathCost = "";
+			if (layoutPanel.vacuum.getNavigationLogic().getIsReturning()) {
+				returnPathCost = "ReturnCost: returning";
+			} else {
+				returnPathCost = "ReturnCost: "
+						+ layoutPanel.vacuum.getNavigationLogic()
+								.getReturnCost();
 			}
-			
+
 			String dispaly = dirtStatusStr + "    " + chargeStatusStr + "    "
-					+ pathCost;
+					+ returnPathCost;
 
 			JLabel statusLabel = new JLabel(dispaly);
 			statusLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -331,8 +343,7 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 
 	@Override
 	public void sendNotification(String message) {
-		JOptionPane.showMessageDialog(this, message);
-
+		 JOptionPane.showMessageDialog(this, message);
 	}
 
 }

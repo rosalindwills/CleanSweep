@@ -10,13 +10,13 @@ public class Vacuum implements Runnable {
 	private Observer observer;
 
 	public static long delay = 50;
-	final double chargeCapacity = 64;
+	final double chargeCapacity = 50;
 	final double dirtCapacity = 50;
 	private int currentFloor;
 
 	private ICell current;
 	private ICell next;
-	public volatile boolean on = false;
+	private volatile boolean on = false;
 	private int dirtUnits = 0;
 	double chargeRemaining;
 
@@ -86,6 +86,7 @@ public class Vacuum implements Runnable {
 			this.next = this.navLogic.checkAndGetNext(this.chargeRemaining);
 			// when navlgoic returns a null, no next position to go, all done!
 			if (next == null) {
+				Stop();
 				break;
 			}
 			this.observer.update();
@@ -159,5 +160,9 @@ public class Vacuum implements Runnable {
 
 	public void registerObserver(Observer ob) {
 		this.observer = ob;
+	}
+	
+	public boolean getIsOn() {
+		return this.on;
 	}
 }

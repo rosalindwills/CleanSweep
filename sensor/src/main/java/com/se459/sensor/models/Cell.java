@@ -113,15 +113,21 @@ public class Cell implements ICell {
 
 	@Override
 	public double getVacuumCost() {
-		switch (this.getSurfaceType()) {
-		case BAREFLOOR:
-			return ICell.BAREFLOOR_COST;
-		case LOWPILE:
-			return ICell.LOWPILE_COST;
-		case HIGHPILE:
-			return ICell.HIGHPILE_COST;
-		default:
-			return ICell.UNKNOWN_COST;
+		if (this.traversed) {
+			switch (this.getSurfaceType()) {
+			case BAREFLOOR:
+				return ICell.BAREFLOOR_COST;
+			case LOWPILE:
+				return ICell.LOWPILE_COST;
+			case HIGHPILE:
+				return ICell.HIGHPILE_COST;
+			default:
+				return ICell.UNKNOWN_COST;
+			}
+		} else {
+			// assume no cost to vacuum, don't want to not visit a cell because we assumed the vacuum
+			// cost is too high, can always not vacuum once we are in the cell if the cost is too high
+			return 0;
 		}
 	}
 
