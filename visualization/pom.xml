@@ -37,7 +37,7 @@
 		  <configuration>
 			<archive>
 			  <manifest>
-				<mainClass>main.java.com.se459.visualization.HomeLayoutDrawer</mainClass>
+				<mainClass>com.se459.visualization.HomeLayoutDrawer</mainClass>
 			  </manifest>
 			</archive>
 			<descriptorRefs>

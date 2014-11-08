@@ -1,4 +1,4 @@
-package main.java.com.se459.visualization;
+package com.se459.visualization;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -124,11 +124,14 @@ class HomeLayoutPanel extends JPanel {
 		}
 
 		// draw return path
-		for (ICell c : vacuum.getNavigationLogic().getReturnPath()) {
-			g2d.setColor(Color.red);
-			g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY() * yMult
-					+ yMult * 4 / 10, xMult / 5, yMult / 5);
-
+		if(null != vacuum.getNavigationLogic().getReturnPath())
+		{
+			for (ICell c : vacuum.getNavigationLogic().getReturnPath()) {
+				g2d.setColor(Color.red);
+				g2d.drawOval(c.getX() * xMult + xMult * 4 / 10, c.getY() * yMult
+						+ yMult * 4 / 10, xMult / 5, yMult / 5);
+	
+			}
 		}
 	}
 
