@@ -9,9 +9,9 @@ import com.se459.util.log.LogFactory;
 public class VacuumMemory {
 
 	// known and traversed and clean 
-	private ArrayList<ICell> finishedCells = new ArrayList<ICell>();
+	private List<ICell> finishedCells = new ArrayList<ICell>();
 	// either known but not traversed OR known, traversed but not clean
-	private ArrayList<ICell> unfinishedCells = new ArrayList<ICell>();
+	private List<ICell> unfinishedCells = new ArrayList<ICell>();
 
 	// when the sweep goes to a new cell, it looks around and remembers new cells.
 	public void addNewCell(ICell cell) {
@@ -33,8 +33,9 @@ public class VacuumMemory {
 	}
 
 	public void addFinishedCells(ICell cell) {
-		if(!this.finishedCells.contains(cell))
-		finishedCells.add(cell);
+		if(!this.finishedCells.contains(cell)) {
+			finishedCells.add(cell);
+		}
 	}
 
 

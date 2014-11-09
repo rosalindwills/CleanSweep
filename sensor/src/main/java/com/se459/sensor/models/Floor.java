@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Floor implements IFloor {
-	private List<ICell> _cells;
-	private int _level;
+	private List<ICell> cells;
+	private int level;
 	private int minX, maxX, minY, maxY;
 	
-	public Floor(int level) {
-		_level = level;
-		_cells = new ArrayList<ICell>();
+	public Floor(int passedLevel) {
+		level = passedLevel;
+		cells = new ArrayList<ICell>();
 		
 		minX = Integer.MAX_VALUE;
 		maxX = Integer.MIN_VALUE;
@@ -22,11 +22,11 @@ public class Floor implements IFloor {
 	}
 	
 	public int getLevel() {
-		return _level;
+		return level;
 	}
 
 	public ICell getCell(int x, int y) {
-		for(ICell cell : _cells) {
+		for(ICell cell : cells) {
 			if (cell.getX() == x && cell.getY() == y) {
 				return cell;
 			}
@@ -35,7 +35,7 @@ public class Floor implements IFloor {
 	}
 	
 	public void addCell(ICell cell) {
-		_cells.add(cell);
+		cells.add(cell);
 		AdjustMinMax(cell);
 	}
 
@@ -47,48 +47,39 @@ public class Floor implements IFloor {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Floor " + getLevel() + "\n");
-		for (ICell cell : _cells) {
+		for (ICell cell : cells) {
 			builder.append(cell.toString());
 		}
 		return builder.toString();
 	}
 	
-	public int getMinX()
-	{
+	public int getMinX() {
 		return minX;
 	}
 	
-	public int getMaxX()
-	{
+	public int getMaxX() {
 		return maxX;
 	}
 	
-	public int getMinY()
-	{
+	public int getMinY() {
 		return minY;
 	}
 	
-	public int getMaxY()
-	{
+	public int getMaxY() {
 		return maxY;
 	}
 	
-	private void AdjustMinMax(ICell newCell)
-	{
-		if(newCell.getX() < minX)
-		{
+	private void AdjustMinMax(ICell newCell) {
+		if(newCell.getX() < minX) {
 			minX = newCell.getX();
 		}
-		if(newCell.getX() > maxX)
-		{
+		if(newCell.getX() > maxX) {
 			maxX = newCell.getX();
 		}
-		if(newCell.getY() < minY)
-		{
+		if(newCell.getY() < minY) {
 			minY = newCell.getY();
 		}
-		if(newCell.getY() > maxY)
-		{
+		if(newCell.getY() > maxY) {
 			maxY = newCell.getY();
 		}
 	}

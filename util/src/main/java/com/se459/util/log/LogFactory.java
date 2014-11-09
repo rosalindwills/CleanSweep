@@ -2,6 +2,9 @@ package com.se459.util.log;
 
 public class LogFactory {
 	
+	private LogFactory() {
+	}
+	
 	/** Returns a logging object, which can be used to output logging to console.
 	 * 
 	 * @return logging object

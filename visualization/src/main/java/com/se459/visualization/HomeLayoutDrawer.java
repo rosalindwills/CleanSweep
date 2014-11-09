@@ -11,10 +11,12 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 import org.xml.sax.SAXException;
 
 import com.se459.modules.models.Observer;
@@ -32,8 +34,8 @@ class HomeLayoutPanel extends JPanel {
 	IFloor floor;
 	Vacuum vacuum;
 
-	public HomeLayoutPanel(IFloor Floor, Vacuum vac) {
-		floor = Floor;
+	public HomeLayoutPanel(IFloor fl, Vacuum vac) {
+		floor = fl;
 		vacuum = vac;
 	}
 
@@ -52,16 +54,12 @@ class HomeLayoutPanel extends JPanel {
 
 				if (null != cell) {
 					// known and traversed
-					if (vacuum.getMemory().getAllKnownCells().contains(cell)) {
-						if (cell.isTraversed()) {
-							g2d.setColor(getSurfaceColor(cell,
-									cell.getDirtUnits()));
-							Rectangle2D rect = new Rectangle2D.Float(x * xMult,
-									y * yMult, xMult, yMult);
-							g2d.fill(rect);
-
-						}
-
+					if (vacuum.getMemory().getAllKnownCells().contains(cell) && (cell.isTraversed())) {
+						g2d.setColor(getSurfaceColor(cell,
+								cell.getDirtUnits()));
+						Rectangle2D rect = new Rectangle2D.Float(x * xMult,
+								y * yMult, xMult, yMult);
+						g2d.fill(rect);
 					}
 
 					// known but not traversed
@@ -104,18 +102,18 @@ class HomeLayoutPanel extends JPanel {
 			if (vacuum.getIsOn()) {
 				// draw current target cell
 				g2d.setColor(Color.white);
-				g2d.drawOval(vacuum.GetDestinationX() * xMult
-						+ (int) (xMult / 2.6), vacuum.GetDestinationY() * yMult
+				g2d.drawOval(vacuum.getDestinationX() * xMult
+						+ (int) (xMult / 2.6), vacuum.getDestinationY() * yMult
 						+ (int) (yMult / 2.6), xMult / 4, yMult / 4);
 
 				// draw current cell (vacuum). green means vacuum is on
 				g2d.setColor(Color.green);
-				g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY()
+				g2d.drawOval(vacuum.getX() * xMult + xMult / 4, vacuum.getY()
 						* yMult + yMult / 4, xMult / 2, yMult / 2);
 			} else {
 				// draw the vacuum. red means vacuum is off
 				g2d.setColor(Color.red);
-				g2d.drawOval(vacuum.GetX() * xMult + xMult / 4, vacuum.GetY()
+				g2d.drawOval(vacuum.getX() * xMult + xMult / 4, vacuum.getY()
 						* yMult + yMult / 4, xMult / 2, yMult / 2);
 
 			}
@@ -173,8 +171,7 @@ class HomeLayoutPanel extends JPanel {
 		g *= Math.pow(0.8, dirtUnits);
 		b *= Math.pow(0.8, dirtUnits);
 
-		Color color = new Color(r, g, b, 1.0f);
-		return color;
+		return new Color(r, g, b, 1.0f);
 
 	}
 
@@ -205,8 +202,8 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 	static int maximumCellSize = 100;
 	static int minimumCellSize = 5;
 
-	public static int actualLayoutPanelWidth;
-	public static int actualLayoutPanelHeight;
+	private static int actualLayoutPanelWidth;
+	private static int actualLayoutPanelHeight;
 
 	static int padding = 50;
 
@@ -222,7 +219,7 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 			vacuum = Vacuum.getInstance(sim, 1, 0, 0);
 
 		} catch (SAXException | IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 
 		initUI();
@@ -244,15 +241,15 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 		// a proper size for cell based on floor plan.
 		int actualCellSize = calculateCellSize(rows, cols, maximumWindowlWidth,
 				maximumLayoutPanelHeight, maximumCellSize, minimumCellSize);
-		int actualLayoutPanelWidth = actualCellSize * rows;
-		int actualLayoutPanelHeight = actualCellSize * cols;
+		actualLayoutPanelWidth = actualCellSize * rows;
+		actualLayoutPanelHeight = actualCellSize * cols;
 		setSize(actualLayoutPanelWidth + padding, actualLayoutPanelHeight
 				+ statusPanelHeight + padding);
 
-		FlowLayout UILayout = new FlowLayout();
-		UILayout.setHgap(0);
-		UILayout.setVgap(0);
-		setLayout(UILayout);
+		FlowLayout uiLayout = new FlowLayout();
+		uiLayout.setHgap(0);
+		uiLayout.setVgap(0);
+		setLayout(uiLayout);
 
 		statusPanel = new JPanel();
 		statusPanel.add(new JLabel("Initializing ..."));

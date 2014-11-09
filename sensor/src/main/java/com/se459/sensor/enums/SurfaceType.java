@@ -17,8 +17,9 @@ public enum SurfaceType {
 	
 	public static SurfaceType byValue(int value) {
 		for (SurfaceType type : SurfaceType.values()) {
-	        if (type.getValue() == value)
+	        if (type.getValue() == value) {
 	            return type;
+	        }
 	    }
 	    return null;
 	}

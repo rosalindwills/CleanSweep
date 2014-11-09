@@ -10,23 +10,21 @@ import com.se459.sensor.enums.SurfaceType;
 
 public class HomeLayoutParser extends DefaultHandler {
 
-	private HomeLayout _homeLayout = new HomeLayout();
-	private int _currentFloor = -1;
+	private HomeLayout homeLayout = new HomeLayout();
+	private int currentFloor = -1;
 	
     public HomeLayoutParser() {
     	super();
     }
 
-    public void startElement (String uri, String name,
-		      String qName, Attributes atts)
-	{
-		if (name.equals("floor")) {
+    public void startElement (String uri, String name, String qName, Attributes atts) {
+		if ("floor".equals(name)) {
 			int level = Integer.parseInt(atts.getValue("level"));
 			IFloor floor = new Floor(level);
-			_homeLayout.addFloor(floor);
-			_currentFloor = level;
+			homeLayout.addFloor(floor);
+			currentFloor = level;
 		}
-		if (name.equals("cell")) {
+		if ("cell".equals(name)) {
 			int x = Integer.parseInt(atts.getValue("xs"));
 			int y = Integer.parseInt(atts.getValue("ys"));
 			SurfaceType surfaceType = SurfaceType.byValue(Integer.parseInt(atts.getValue("ss")));
@@ -42,11 +40,11 @@ public class HomeLayoutParser extends DefaultHandler {
 			PathType pathNegY = PathType.byValue(intNegY);
 			boolean isChargingStation = Integer.parseInt(atts.getValue("cs")) == 1 ? true : false;
 			ICell cell = new Cell(x, y, surfaceType, dirtUnits, pathPosX, pathNegX, pathPosY, pathNegY, isChargingStation);
-			_homeLayout.addCell(_currentFloor, cell);
+			homeLayout.addCell(currentFloor, cell);
 		}
 	}
     
     public IHomeLayout getHomeLayout() {
-    	return _homeLayout;
+    	return homeLayout;
     }
 }

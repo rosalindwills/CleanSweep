@@ -9,9 +9,9 @@ public class Vacuum implements Runnable {
 
 	private Observer observer;
 
-	public static long delay = 50;
-	final double chargeCapacity = 50;
-	final double dirtCapacity = 50;
+	final static long delay = 50;
+	final static double chargeCapacity = 50;
+	final static double dirtCapacity = 50;
 	private int currentFloor;
 
 	private ICell current;
@@ -29,17 +29,16 @@ public class Vacuum implements Runnable {
 
 	static public Vacuum getInstance(ISensor sensor, int floor, int xPos,
 			int yPos) {
-		return new Vacuum(sensor, floor, xPos, yPos);
+		return new Vacuum(sensor, floor);
 	}
 
-	private Vacuum(ISensor sensorSimulator, int floor, int xPosition,
-			int yPosition) {
+	private Vacuum(ISensor sensorSimulator, int floor) {
 		chargeRemaining = chargeCapacity;
 		dirtUnits = 0;
 		this.sensor = sensorSimulator;
 		this.currentFloor = floor;
 		memory = new VacuumMemory();
-		navLogic = new NavigationLogic(sensorSimulator, floor, memory);
+		navLogic = new NavigationLogic(sensorSimulator, memory);
 		on = true;
 	
 		current = sensor.getStartPoint(this.currentFloor);
@@ -47,7 +46,7 @@ public class Vacuum implements Runnable {
 		scnLog.append("In vacuum constructor");
 	}
 
-	public void Stop() {
+	public void stop() {
 		on = false;
 
 		scnLog.append("Stop Vacuum...");
@@ -60,7 +59,7 @@ public class Vacuum implements Runnable {
 		this.next = current;
 		this.observer.update();
 		sleep();
-		Sweep(current);
+		sweep(current);
 
 		while (on) {
 			if (!next.equals(current)) {
@@ -81,12 +80,12 @@ public class Vacuum implements Runnable {
 				}
 				this.observer.update();
 				sleep();
-				Sweep(current);
+				sweep(current);
 			}
 			this.next = this.navLogic.checkAndGetNext(this.chargeRemaining);
 			// when navlgoic returns a null, no next position to go, all done!
 			if (next == null) {
-				Stop();
+				stop();
 				break;
 			}
 			this.observer.update();
@@ -96,7 +95,7 @@ public class Vacuum implements Runnable {
 		this.observer.sendNotification("Done");
 	}
 
-	private void Sweep(ICell cell) {
+	private void sweep(ICell cell) {
 		while (!cell.isClean()) {
 			// check if the sweep has enough charge to do engage vacuum one more time
 			if (this.navLogic.checkIfCanDoVacuum(chargeRemaining, cell)) {
@@ -118,19 +117,19 @@ public class Vacuum implements Runnable {
 		memory.becomeFinished(current);
 	}
 
-	public int GetX() {
+	public int getX() {
 		return this.current.getX();
 	}
 
-	public int GetY() {
+	public int getY() {
 		return this.current.getY();
 	}
 
-	public int GetDestinationX() {
+	public int getDestinationX() {
 		return this.next.getX();
 	}
 
-	public int GetDestinationY() {
+	public int getDestinationY() {
 		return this.next.getY();
 	}
 

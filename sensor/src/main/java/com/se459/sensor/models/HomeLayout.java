@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeLayout implements IHomeLayout {
-	private List<IFloor> _floors;
+	private List<IFloor> floors;
 	
 	public HomeLayout() {
-		_floors = new ArrayList<IFloor>();
+		floors = new ArrayList<IFloor>();
 	}
 
 	public ICell getCell(int floorLevel, int x, int y) {
@@ -28,7 +28,7 @@ public class HomeLayout implements IHomeLayout {
 
 	public IFloor getFloor(int floorLevel) {
 		IFloor floorToSearch = null;
-		for(IFloor floor : _floors) {
+		for(IFloor floor : floors) {
 			if (floor.getLevel() == floorLevel) {
 				floorToSearch = floor;
 			}
@@ -37,11 +37,11 @@ public class HomeLayout implements IHomeLayout {
 	}
 	
 	public List<IFloor> getFloors() {
-		return _floors;
+		return floors;
 	}
 	
 	public void addFloor(IFloor floor) {
-		_floors.add(floor);
+		floors.add(floor);
 	}
 
 	public void cleanCell(int floorLevel, int x, int y) {
@@ -51,8 +51,8 @@ public class HomeLayout implements IHomeLayout {
 	
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Floors: " + _floors.size() + "\n\n");
-		for(IFloor floor : _floors) {
+		builder.append("Floors: " + floors.size() + "\n\n");
+		for(IFloor floor : floors) {
 			builder.append(floor.toString());
 		}
 		return builder.toString();

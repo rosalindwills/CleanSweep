@@ -1,17 +1,24 @@
 package com.se459.modules.sweep;
 
 import java.io.IOException;
+
 import com.se459.sensor.models.SensorSimulator;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.modules.models.Vacuum;
+
 import org.xml.sax.SAXException;
+
 import java.lang.Thread;
+
 import static java.lang.System.*;
 
 
 public class StartVacuum {
 
- public static void main(String[] args){
+	private StartVacuum() {
+	}
+	
+	public static void main(String[] args){
         ISensor sim;
         Vacuum vacuum;
 
@@ -25,16 +32,16 @@ public class StartVacuum {
             new Thread(vacuum).start();
  
             Thread.sleep(20000);
-
- 	   //if vacuum is running, stop it
-           vacuum.Stop();
+ 
+            //if vacuum is running, stop it
+            vacuum.stop();
         
-        }catch(SAXException ex){
-           ex.printStackTrace(); 
-        }catch(IOException ex){
-           ex.printStackTrace();
-        }catch(Exception ex){
-           ex.printStackTrace();
+        } catch (SAXException e) {
+        	throw new RuntimeException(e);
+        } catch (IOException e) {
+        	throw new RuntimeException(e);
+         }catch (Exception e) {
+        	throw new RuntimeException(e);
         }
- } 
+	} 
 }

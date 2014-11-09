@@ -2,41 +2,8 @@ package com.se459.modules.models;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
-/*
- class Cell{
- int x;
- int y;
- boolean nx;
- boolean ny;
- boolean px;
- boolean py;
-
- public Cell(int x, int y, boolean px, boolean py, boolean nx, boolean ny) {
- super();
- this.x = x;
- this.y = y;
- this.nx = nx;
- this.ny = ny;
- this.px = px;
- this.py = py;
- }
-
- public String toString(){
- return "(" + x + ", " + y + ")";
- }
-
- public boolean equals(Object obj) {
- if (!(obj instanceof Cell))
- return false;
- if (obj == this)
- return true;
- Cell cell = (Cell) obj;
- return cell.x == this.x && cell.y == this.y;
- }
- }
- */
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -84,13 +51,13 @@ public class PathFinder {
 	// and then pick a shortest one among all shortest paths.
 	public List<ICell> findPath(ICell start, List<ICell> unfinishedCells) {
 
-		Map<ICell, List<ICell>> finished = new Hashtable<ICell, List<ICell>>();
-		Map<ICell, List<ICell>> heads = new Hashtable<ICell, List<ICell>>();
+		Map<ICell, List<ICell>> finished = new HashMap<ICell, List<ICell>>();
+		Map<ICell, List<ICell>> heads = new HashMap<ICell, List<ICell>>();
 		List<ICell> list = new ArrayList<ICell>();
 		list.add(start);
 		heads.put(start, list);
 
-		while (heads.size() > 0) {
+		while (!heads.isEmpty()) {
 			Map<ICell, List<ICell>> sortedMap = this.sortByValue(heads);
 			Set<Entry<ICell, List<ICell>>> sortedSet = sortedMap.entrySet();
 

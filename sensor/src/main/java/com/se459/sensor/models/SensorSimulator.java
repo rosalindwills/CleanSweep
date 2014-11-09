@@ -19,7 +19,7 @@ public class SensorSimulator implements ISensor {
 			+ "main" + File.separator + "resources" + File.separator
 			+ "homeLayout1.xml";
 
-	private IHomeLayout _homeLayout;
+	private IHomeLayout homeLayout;
 
 	static public ISensor getInstance() {
 		return new SensorSimulator();
@@ -30,16 +30,11 @@ public class SensorSimulator implements ISensor {
 	}
 
 	public IHomeLayout getHomeLayout() {
-		return _homeLayout;
+		return homeLayout;
 	}
 
 	private ICell readCell(int floorLevel, int x, int y) {
-		ICell cell = _homeLayout.getCell(floorLevel, x, y);
-		return cell;
-	}
-
-	private void cleanCell(int floorLevel, int x, int y) {
-		_homeLayout.cleanCell(floorLevel, x, y);
+		return homeLayout.getCell(floorLevel, x, y);
 	}
 
 	public void importXml(String path) throws SAXException, IOException {
@@ -49,7 +44,7 @@ public class SensorSimulator implements ISensor {
 		xr.setErrorHandler(handler);
 		FileReader r = new FileReader(path);
 		xr.parse(new InputSource(r));
-		_homeLayout = handler.getHomeLayout();
+		homeLayout = handler.getHomeLayout();
 	}
 
 	/**

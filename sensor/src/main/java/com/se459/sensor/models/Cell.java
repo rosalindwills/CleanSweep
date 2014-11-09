@@ -6,97 +6,99 @@ import com.se459.sensor.enums.SurfaceType;
 
 public class Cell implements ICell {
 	private volatile boolean traversed;
-	private int _x;
-	private int _y;
-	private SurfaceType _surfaceType;
-	private int _dirtUnits;
-	private PathType _pathPosX;
-	private PathType _pathNegX;
-	private PathType _pathPosY;
-	private PathType _pathNegY;
-	private boolean _isChargingStation;
+	private int x;
+	private int y;
+	private SurfaceType surfaceType;
+	private int dirtUnits;
+	private PathType pathPosX;
+	private PathType pathNegX;
+	private PathType pathPosY;
+	private PathType pathNegY;
+	private boolean isChargingStation;
 
-	public Cell(int x, int y, SurfaceType surfaceType, int dirtUnits,
-			PathType pathPosX, PathType pathNegX, PathType pathPosY,
-			PathType pathNegY, boolean isChargingStation) {
-		_x = x;
-		_y = y;
-		_surfaceType = surfaceType;
-		_dirtUnits = dirtUnits;
-		_pathPosX = pathPosX;
-		_pathNegX = pathNegX;
-		_pathPosY = pathPosY;
-		_pathNegY = pathNegY;
-		_isChargingStation = isChargingStation;
+	public Cell(int passedX, int passedY, SurfaceType passedSurfaceType, int passedDirtUnits,
+			PathType passedPathPosX, PathType passedPathNegX, PathType passedPathPosY,
+			PathType passedPathNegY, boolean passedIsChargingStation) {
+		x = passedX;
+		y = passedY;
+		surfaceType = passedSurfaceType;
+		dirtUnits = passedDirtUnits;
+		pathPosX = passedPathPosX;
+		pathNegX = passedPathNegX;
+		pathPosY = passedPathPosY;
+		pathNegY = passedPathNegY;
+		isChargingStation = passedIsChargingStation;
 	}
 
 	public int getX() {
-		return _x;
+		return x;
 	}
 
 	public int getY() {
-		return _y;
+		return y;
 	}
 
 	public SurfaceType getSurfaceType() {
-		return _surfaceType;
+		return surfaceType;
 	}
 
 	public PathType getPathPosX() {
-		return _pathPosX;
+		return pathPosX;
 	}
 
 	public PathType getPathNegX() {
-		return _pathNegX;
+		return pathNegX;
 	}
 
 	public PathType getPathPosY() {
-		return _pathPosY;
+		return pathPosY;
 	}
 
 	public PathType getPathNegY() {
-		return _pathNegY;
+		return pathNegY;
 	}
 
 	public boolean getIsChargingStation() {
-		return _isChargingStation;
+		return isChargingStation;
 	}
 
 	public void cleanCell() {
-		_dirtUnits--;
+		dirtUnits--;
 	}
 
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("     Cell " + _x + ", " + _y + ": \n");
-		builder.append("          Surface Type: " + _surfaceType.toString());
-		builder.append("          Dirt: " + _dirtUnits + " units\n");
-		builder.append("          Positive X Path: " + _pathPosX.toString()
+		builder.append("     Cell " + x + ", " + y + ": \n");
+		builder.append("          Surface Type: " + surfaceType.toString());
+		builder.append("          Dirt: " + dirtUnits + " units\n");
+		builder.append("          Positive X Path: " + pathPosX.toString()
 				+ "\n");
-		builder.append("          Negative X Path: " + _pathNegX.toString()
+		builder.append("          Negative X Path: " + pathNegX.toString()
 				+ "\n");
-		builder.append("          Positive Y Path: " + _pathPosY.toString()
+		builder.append("          Positive Y Path: " + pathPosY.toString()
 				+ "\n");
-		builder.append("          Negative Y Path: " + _pathNegY.toString()
+		builder.append("          Negative Y Path: " + pathNegY.toString()
 				+ "\n");
 		return builder.toString();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Cell))
+		if (!(obj instanceof Cell)) {
 			return false;
-		if (obj == this)
+		}
+		if (obj == this) {
 			return true;
+		}
 		Cell cell = (Cell) obj;
-		return cell._x == this._x && cell._y == this._y;
+		return cell.x == this.x && cell.y == this.y;
 	}
 	
 	@Override
 	public int hashCode() {
 		int hash = 17;
-        hash = hash * 23 + _x;
-        hash = hash * 23 + _y;
+        hash = hash * 23 + x;
+        hash = hash * 23 + y;
         return hash;
 	}
 
@@ -152,11 +154,11 @@ public class Cell implements ICell {
 
 	@Override
 	public boolean isClean() {
-		return this._dirtUnits == 0;
+		return this.dirtUnits == 0;
 	}
 
 	@Override
 	public int getDirtUnits() {
-		return this._dirtUnits;
+		return this.dirtUnits;
 	}
 }

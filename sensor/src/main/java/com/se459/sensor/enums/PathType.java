@@ -18,8 +18,9 @@ public enum PathType {
 	
 	public static PathType byValue(int value) {
 		for (PathType type : PathType.values()) {
-	        if (type.getValue() == value)
+	        if (type.getValue() == value) {
 	            return type;
+	        }
 	    }
 	    return null;
 	}

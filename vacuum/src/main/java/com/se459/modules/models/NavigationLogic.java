@@ -23,29 +23,21 @@ public class NavigationLogic {
 	// if this list is empty, it means no path to follow currently,  
 	// vacuum is exploring the cells around.
 	private List<ICell> currentTravelingPath = new ArrayList<ICell>();
-
 	// keep track of a return path
 	private List<ICell> returnPath = new ArrayList<ICell>();
-
 	private int currentFloor = 1;
-
 	private ISensor sensor;
-
 	private double returnCost = 0;
-
 	private boolean isReturning = false;
-
-	private Log log;
 
 	public ICell readCurrentCell(int floor) {
 		return currentPosition;
 	}
 
-	public NavigationLogic(ISensor sensor, int floor, VacuumMemory vacuumMemory) {
+	public NavigationLogic(ISensor sensor, VacuumMemory vacuumMemory) {
 		this.currentPosition = sensor.getStartPoint(this.currentFloor);
 		this.sensor = sensor;
 		this.memory = vacuumMemory;
-		this.log = LogFactory.newFileLog();
 	}
 
 	public ICell readCurrentCell() {
@@ -65,8 +57,7 @@ public class NavigationLogic {
 	}
 	
 	public double getPathCost() {
-		if(null != this.currentTravelingPath)
-		{
+		if(null != this.currentTravelingPath) {
 			return PathFinder.calculateCost(this.currentTravelingPath);
 		}
 		
@@ -95,9 +86,8 @@ public class NavigationLogic {
 					this.currentTravelingPath = this.returnPath;
 					this.currentTravelingPath.remove(0);
 					return this.currentTravelingPath.remove(0);
-				}
-				// vacuum has already returned to the charging point.
-				else {
+				} else {
+					// vacuum has already returned to the charging point.
 					return null;
 				}
 			}
@@ -115,8 +105,7 @@ public class NavigationLogic {
 
 				PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
 				List<ICell> returnPathFromNext = pf.findPath(cell, destination);
-				double returnCostFromNext = PathFinder
-						.calculateCost(returnPathFromNext);
+				double returnCostFromNext = PathFinder.calculateCost(returnPathFromNext);
 
 				if (remaining - nextMoveCost >= returnCostFromNext) {
 					return this.currentTravelingPath.remove(0);
@@ -127,10 +116,8 @@ public class NavigationLogic {
 					return this.returnPath.remove(0);
 				}
 
-			}
-
-			// no path to follow along, vacuum is exploring the cells around.
-			else {
+			} else {
+				// no path to follow along, vacuum is exploring the cells around.
 				findPathToNextKnownCell();
 				
 				double costToDestination = PathFinder.calculateCost(this.currentTravelingPath);
@@ -153,28 +140,22 @@ public class NavigationLogic {
 					}
 					
 					return cell;
-				}
-				else
-				{
+				} else {
 					return returnToBaseStation();
 				}
 			}
 		}
 	}
 	
-	private ICell returnToBaseStation()
-	{
+	private ICell returnToBaseStation() {
 		// All cells around are either obstacles or finished or we don't have
 		// enough charges to go to that cell, so we need to return now.
 		
 		// If we are already at the charging station don't need to do anything
-		if(this.currentPosition.getIsChargingStation())
-		{
+		if(this.currentPosition.getIsChargingStation()) {
 			return null;
-		}
-		// If we aren't at the charging station then start us on the path back to it.
-		else
-		{
+		} else {
+			// If we aren't at the charging station then start us on the path back to it.
 			this.isReturning = true;
 			this.currentTravelingPath = this.returnPath;
 			this.currentTravelingPath.remove(0);
