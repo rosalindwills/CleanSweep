@@ -38,7 +38,7 @@ class FileLog implements Log {
 				logFile.getParentFile().mkdirs(); 
 				logFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -50,7 +50,7 @@ class FileLog implements Log {
 			output.newLine();
 			output.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -60,7 +60,7 @@ class FileLog implements Log {
 			output.newLine();
 			output.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		
 	}
@@ -74,7 +74,7 @@ class FileLog implements Log {
 			output.newLine();
 			output.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -85,7 +85,7 @@ class FileLog implements Log {
 			writer.print("");
 			writer.close();	
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 			
 	}

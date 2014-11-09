@@ -146,7 +146,7 @@ public class Vacuum implements Runnable {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 

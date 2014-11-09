@@ -48,6 +48,7 @@ public class MemoryLog {
 		try {
 			ImageIO.write(bi, "png", new File(fileName));
 		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 
 	}
@@ -59,7 +60,7 @@ public class MemoryLog {
 			writer.print("");
 			writer.close();
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 
 	}

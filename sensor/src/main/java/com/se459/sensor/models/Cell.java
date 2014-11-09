@@ -91,6 +91,14 @@ public class Cell implements ICell {
 		Cell cell = (Cell) obj;
 		return cell._x == this._x && cell._y == this._y;
 	}
+	
+	@Override
+	public int hashCode() {
+		int hash = 17;
+        hash = hash * 23 + _x;
+        hash = hash * 23 + _y;
+        return hash;
+	}
 
 	@Override
 	public double getTraverseCost() {

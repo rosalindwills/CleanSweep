@@ -41,7 +41,7 @@ public class ScreenLog implements Log{
 	    }
 	    catch (final Exception e)
 	    {
-	        e.printStackTrace();
+	    	throw new RuntimeException(e);
 	    }
 	}
 
