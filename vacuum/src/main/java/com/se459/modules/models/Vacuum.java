@@ -45,6 +45,7 @@ public class Vacuum implements Runnable {
 		current = sensor.getStartPoint(this.currentFloor);
 		
 		scnLog.append("In vacuum constructor");
+		scnLog.append("This line is to test jenkins build processes.");
 	}
 
 	public void Stop() {
