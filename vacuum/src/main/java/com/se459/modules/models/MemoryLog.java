@@ -14,7 +14,7 @@ import com.se459.util.log.Config;
 
 public class MemoryLog {
 
-	private String logPathString = Config.memoryDumpOutDirectory;
+	private String logPathString = Config.getInstance().memoryDumpOutDirectory;
 	BufferedWriter output;
 
 	
@@ -28,7 +28,7 @@ public class MemoryLog {
 		
 		String folderName = new SimpleDateFormat(
 				"[yyyyMMdd][hh][mm][ss][aaa]").format(new Date());
-		this.logPathString = Config.memoryDumpOutDirectory + File.separator + folderName;
+		this.logPathString = Config.getInstance().memoryDumpOutDirectory + File.separator + folderName;
 		File logFile = new File(logPathString);
 		if (!logFile.exists()) {
 			logFile.getParentFile().mkdirs();

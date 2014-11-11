@@ -28,7 +28,7 @@ public class TestLog {
 		
 		BufferedReader br;
 		try {
-			File logFile = new File(Config.defaultLogFilePath);
+			File logFile = new File(Config.getInstance().defaultLogFilePath);
 			br = new BufferedReader(new FileReader(logFile));
 			String firstLine = br.readLine();
 			String secondLine = br.readLine();

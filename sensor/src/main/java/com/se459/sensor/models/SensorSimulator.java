@@ -17,7 +17,7 @@ import com.se459.util.log.Config;
 
 public class SensorSimulator implements ISensor {
 
-	static final public String HOME_LAYOUT_FILE = Config.floorPlanFilePath;
+	static final public String HOME_LAYOUT_FILE = Config.getInstance().floorPlanFilePath;
 
 	private IHomeLayout homeLayout;
 

@@ -10,9 +10,8 @@ public class Vacuum implements Runnable {
 
 	private Observer observer;
 
-	final static long delay = 50;
-	private double chargeCapacity = Config.chargeCapacity;
-	private double dirtCapacity = Config.dirtCapacity;
+	private double chargeCapacity = Config.getInstance().chargeCapacity;
+	private double dirtCapacity = Config.getInstance().dirtCapacity;
 	private int currentFloor;
 
 	private ICell current;
@@ -150,7 +149,7 @@ public class Vacuum implements Runnable {
 
 	private void sleep() {
 		try {
-			Thread.sleep(delay);
+			Thread.sleep(Config.getInstance().delay);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
