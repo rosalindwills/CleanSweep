@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.junit.Assert;
+
+import com.se459.util.log.Config;
 import com.se459.util.log.Log;
 import com.se459.util.log.LogFactory;
 
@@ -26,7 +28,7 @@ public class TestLog {
 		
 		BufferedReader br;
 		try {
-			File logFile = new File("src"+ File.separator + "main"+ File.separator + "log" + File.separator +"log");
+			File logFile = new File(Config.defaultLogFilePath);
 			br = new BufferedReader(new FileReader(logFile));
 			String firstLine = br.readLine();
 			String secondLine = br.readLine();

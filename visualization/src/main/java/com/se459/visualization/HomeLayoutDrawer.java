@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 
 import org.xml.sax.SAXException;
 
+import com.se459.modules.models.MemoryLog;
 import com.se459.modules.models.Observer;
 import com.se459.modules.models.Vacuum;
 import com.se459.sensor.enums.PathType;
@@ -27,7 +28,6 @@ import com.se459.sensor.interfaces.IFloor;
 import com.se459.sensor.interfaces.IHomeLayout;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.sensor.models.SensorSimulator;
-import com.se459.util.log.MemoryLog;
 
 class HomeLayoutPanel extends JPanel {
 
@@ -99,7 +99,7 @@ class HomeLayoutPanel extends JPanel {
 				}
 			}
 
-			if (vacuum.getIsOn()) {
+			if (vacuum.isOn()) {
 				// draw current target cell
 				g2d.setColor(Color.white);
 				g2d.drawOval(vacuum.getDestinationX() * xMult
@@ -309,7 +309,7 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 
 	public void update() {
 
-		if (layoutPanel.vacuum.getIsOn()) {
+		if (layoutPanel.vacuum.isOn()) {
 			statusPanel.removeAll();
 			String dirtStatusStr = "DirtUnits: "
 					+ layoutPanel.vacuum.getDirtUnits();

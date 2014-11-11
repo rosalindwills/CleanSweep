@@ -1,8 +1,9 @@
 package com.se459.modules.models;
 
+import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
-import com.se459.util.log.Log;
+import com.se459.util.log.Config;
 import com.se459.util.log.LogFactory;
 
 public class Vacuum implements Runnable {
@@ -10,8 +11,8 @@ public class Vacuum implements Runnable {
 	private Observer observer;
 
 	final static long delay = 50;
-	final static double chargeCapacity = 50;
-	final static double dirtCapacity = 50;
+	private double chargeCapacity = Config.chargeCapacity;
+	private double dirtCapacity = Config.dirtCapacity;
 	private int currentFloor;
 
 	private ICell current;
@@ -24,8 +25,7 @@ public class Vacuum implements Runnable {
 	private NavigationLogic navLogic;
 	private ISensor sensor;
 
-	Log log = LogFactory.newFileLog();
-	Log scnLog = LogFactory.newScreenLog();
+	SweepLog log = new SweepLog(LogFactory.newFileLog());
 
 	static public Vacuum getInstance(ISensor sensor, int floor, int xPos,
 			int yPos) {
@@ -42,21 +42,24 @@ public class Vacuum implements Runnable {
 		on = true;
 	
 		current = sensor.getStartPoint(this.currentFloor);
-		
-		scnLog.append("In vacuum constructor");
 	}
 
 	public void stop() {
 		on = false;
-
-		scnLog.append("Stop Vacuum...");
-		log.append("Stopped the vacuum");
+		log.stop();
+	}
+	
+	public void done(){
+		on = false;
+		log.done();
 	}
 
 	public void run() {
+		log.start();
 		memory.addNewCell(current);
 		navLogic.moveTo(current);
 		this.next = current;
+		log.recordStatus(this);
 		this.observer.update();
 		sleep();
 		sweep(current);
@@ -64,10 +67,10 @@ public class Vacuum implements Runnable {
 		while (on) {
 			if (!next.equals(current)) {
 				double batteryUnitDrain = this.navLogic.moveTo(this.next);
-				this.chargeRemaining -= batteryUnitDrain;
-				this.current = this.navLogic.readCurrentCell();
-				if (this.current.equals(this.sensor
-						.getStartPoint(this.currentFloor))) {
+				this.chargeRemaining -= batteryUnitDrain;	
+				this.current = this.navLogic.readCurrentCell();		
+				log.recordStatus(this);
+				if (isInChargingPoint()) {
 					this.observer.update();
 					this.observer.sendNotification("Returned! Charging Left: "
 							+ this.chargeRemaining);
@@ -78,17 +81,20 @@ public class Vacuum implements Runnable {
 						this.dirtUnits = 0;
 					}
 				}
+				
 				this.observer.update();
+				
 				sleep();
 				sweep(current);
 			}
 			this.next = this.navLogic.checkAndGetNext(this.chargeRemaining);
 			// when navlgoic returns a null, no next position to go, all done!
 			if (next == null) {
-				stop();
+				done();
 				break;
 			}
 			this.observer.update();
+			
 			sleep();
 		}
 
@@ -97,7 +103,7 @@ public class Vacuum implements Runnable {
 
 	private void sweep(ICell cell) {
 		while (!cell.isClean()) {
-			// check if the sweep has enough charge to do engage vacuum one more time
+			// check if the sweep has enough charge to do vacuum one more time
 			if (this.navLogic.checkIfCanDoVacuum(chargeRemaining, cell)) {
 				// check if have met the dirt capacity
 				if (this.dirtUnits < this.dirtCapacity) {
@@ -105,6 +111,7 @@ public class Vacuum implements Runnable {
 					this.chargeRemaining -= cell.getVacuumCost();
 					this.dirtUnits += 1;
 					this.observer.update();
+					log.engageVacuum(this);
 					sleep();
 				} else {
 					this.navLogic.returnNow();
@@ -161,7 +168,32 @@ public class Vacuum implements Runnable {
 		this.observer = ob;
 	}
 	
-	public boolean getIsOn() {
+	public boolean isOn() {
 		return this.on;
+	}
+	
+	public boolean isReturning() {
+		return this.navLogic.getIsReturning();
+	}
+	
+	public SurfaceType getCurrentSurface(){
+		return this.current.getSurfaceType();
+	}
+	
+	public double getReturnCost(){
+		return this.navLogic.getReturnCost();
+	}
+	
+	public boolean isInChargingPoint(){
+		return this.current.equals(this.sensor
+				.getStartPoint(this.currentFloor));
+	}
+	
+	public ICell getCurrentCell(){
+		return this.current;
+	}
+	
+	public ICell getNextCell(){
+		return this.next;
 	}
 }

@@ -1,4 +1,4 @@
-package com.se459.util.log;
+package com.se459.modules.models;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
@@ -10,10 +10,11 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 
+import com.se459.util.log.Config;
+
 public class MemoryLog {
 
-	private String logPathString = "src" + File.separator + "main"
-			+ File.separator + "log" + File.separator + "memory";
+	private String logPathString = Config.memoryDumpOutDirectory;
 	BufferedWriter output;
 
 	
@@ -27,8 +28,7 @@ public class MemoryLog {
 		
 		String folderName = new SimpleDateFormat(
 				"[yyyyMMdd][hh][mm][ss][aaa]").format(new Date());
-		this.logPathString = "src" + File.separator + "main"
-				+ File.separator + "log" + File.separator + "memory" + File.separator + folderName;
+		this.logPathString = Config.memoryDumpOutDirectory + File.separator + folderName;
 		File logFile = new File(logPathString);
 		if (!logFile.exists()) {
 			logFile.getParentFile().mkdirs();

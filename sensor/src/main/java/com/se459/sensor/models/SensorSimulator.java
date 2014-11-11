@@ -3,21 +3,21 @@ package com.se459.sensor.models;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.IHomeLayout;
 import com.se459.sensor.interfaces.ISensor;
+
 import java.io.FileReader;
 import java.io.IOException;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
-import java.io.File;
 
 import com.se459.sensor.enums.PathType;
+import com.se459.util.log.Config;
 
 public class SensorSimulator implements ISensor {
 
-	static final public String HOME_LAYOUT_FILE = "sensor/src" + File.separator
-			+ "main" + File.separator + "resources" + File.separator
-			+ "homeLayout1.xml";
+	static final public String HOME_LAYOUT_FILE = Config.floorPlanFilePath;
 
 	private IHomeLayout homeLayout;
 

@@ -15,7 +15,7 @@ import java.io.PrintWriter;
 */
 class FileLog implements Log {
 	
-	private String logPathString = "src"+ File.separator + "main"+ File.separator + "log" + File.separator +"log";
+	private String logPathString = Config.defaultLogFilePath;
 	BufferedWriter output;
 	
 	private int lenOfHorizontalLine = 30;
