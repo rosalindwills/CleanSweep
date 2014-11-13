@@ -126,9 +126,6 @@ public class NavigationLogic {
 				// around.
 				findPathToNextKnownCell();
 
-				double costToDestination = PathFinder
-						.calculateCost(this.currentTravelingPath);
-
 				PathFinder pf = new PathFinder(this.memory.getAllKnownCells());
 
 				List<ICell> baseStation = new ArrayList<ICell>();
@@ -136,12 +133,18 @@ public class NavigationLogic {
 
 				ICell destinationCell = this.currentTravelingPath
 						.get(this.currentTravelingPath.size() - 1);
-
+				
+				List<ICell> copy = this.currentTravelingPath;
+				copy.add(0, this.currentPosition);
+				double costToDestination = PathFinder.calculateCost(this.currentTravelingPath);
+				
 				List<ICell> returnPathFromNext = pf.findPath(destinationCell,
 						baseStation);
 				double returnCostFromNextDestination = PathFinder
 						.calculateCost(returnPathFromNext);
 
+				Log log = LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt");
+				log.append(returnCostFromNextDestination + " " + costToDestination + " " + remaining + " " + destinationCell.getVacuumCost() + " " + returnPathFromNext);
 				if (returnCostFromNextDestination + costToDestination < remaining
 						- destinationCell.getVacuumCost()) {
 					ICell cell = this.currentTravelingPath.remove(0);
