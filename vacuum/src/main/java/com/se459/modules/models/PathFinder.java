@@ -120,24 +120,17 @@ public class PathFinder {
 				}
 			}
 
-			System.out.println(head);
-			System.out.println(this.cellsCanBeUsed);
 			if (head.getPathNegX() == PathType.OPEN) {
-				System.out.println(0);
 				for (ICell cell : this.cellsCanBeUsed) {
-					System.out.println(cell);
 					if (cell.getX() == head.getX() - 1
 							&& cell.getY() == head.getY()) {
-						System.out.println(1);
 						if (!heads.containsKey(cell)) {
-							System.out.println(2);
 							List<ICell> path = new ArrayList<ICell>(
 									heads.get(head));
 							path.add(cell);
 							heads.put(cell, path);
 
 						} else {
-							System.out.println(3);
 							List<ICell> oldPath = new ArrayList<ICell>(
 									heads.get(cell));
 							List<ICell> newPath = new ArrayList<ICell>(
@@ -192,10 +185,12 @@ public class PathFinder {
 		double minCost = Double.MAX_VALUE;
 		List<ICell> minCostPath = new ArrayList<ICell>();
 		for (ICell c : unfinishedCells) {
-			List<ICell> path = finished.get(c);
-			if (calculateCost(path) < minCost) {
-				minCostPath = path;
-				minCost = calculateCost(path);
+			if (finished.containsKey(c)) {
+				List<ICell> path = finished.get(c);
+				if (calculateCost(path) < minCost) {
+					minCostPath = path;
+					minCost = calculateCost(path);
+				}
 			}
 		}
 

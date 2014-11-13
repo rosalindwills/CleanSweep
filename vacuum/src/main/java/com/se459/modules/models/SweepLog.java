@@ -19,6 +19,8 @@ public class SweepLog {
 		sb.append("Charge Units: " + vacuum.getChargeRemaining() + "  ");
 		sb.append("Dirt Units: " + vacuum.getDirtUnits() + "  ");
 		sb.append("Surface Type: " + vacuum.getCurrentSurface() + "  ");
+		
+		sb.append("Sensor Checks: " + vacuum.getNavigationLogic().sensorChecks() + "  ");
 
 		if (vacuum.isInChargingPoint()) {
 			sb.append("At Charging Point  ");

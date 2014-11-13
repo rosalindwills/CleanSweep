@@ -12,12 +12,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-public class TestVacuum {
+public class VacuumTest {
 
 	private Vacuum vacuum;
 	private ISensor sim = SensorSimulator.getInstance();
 
-	public TestVacuum(){
+	public VacuumTest(){
 		try 
 		{
 			((SensorSimulator)sim).importXml("src"+ File.separator + "main"+ File.separator + "resources" + File.separator +"homeLayout1.xml");

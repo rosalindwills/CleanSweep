@@ -73,6 +73,7 @@ class HomeLayoutPanel extends JPanel {
 					}
 
 					// draw wall
+					if (vacuum.getMemory().getAllKnownCells().contains(cell) && (cell.isTraversed()) ){
 					g2d.setStroke(new BasicStroke(3));
 					g2d.setColor(Color.black);
 					if (cell.getPathNegX() != PathType.OPEN) {
@@ -91,6 +92,7 @@ class HomeLayoutPanel extends JPanel {
 						g2d.drawLine(x * xMult, y * yMult, x * xMult + xMult, y
 								* yMult);
 					}
+				}
 
 					// draw charging station
 					if (cell.getIsChargingStation()) {
