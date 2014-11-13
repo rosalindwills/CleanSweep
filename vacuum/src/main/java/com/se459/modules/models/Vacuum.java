@@ -42,14 +42,23 @@ public class Vacuum implements Runnable {
 	
 		current = sensor.getStartPoint(this.currentFloor);
 	}
-
+	
 	public void stop() {
 		on = false;
 		log.stop();
 	}
 	
-	public void done(){
+	public void FinishedCleaning(){
 		on = false;
+		
+		if(navLogic.cleanedEntireFloor)
+		{
+			this.observer.sendNotification("Finished cleaning the entire floor.");
+		}
+		else
+		{
+			this.observer.sendNotification("Finished cleaning, did not have enough energy to clean the entire floor.");
+		}
 		log.done();
 	}
 
@@ -87,9 +96,10 @@ public class Vacuum implements Runnable {
 				sweep(current);
 			}
 			this.next = this.navLogic.checkAndGetNext(this.chargeRemaining);
+			
 			// when navlgoic returns a null, no next position to go, all done!
 			if (next == null) {
-				done();
+				FinishedCleaning();
 				break;
 			}
 			this.observer.update();

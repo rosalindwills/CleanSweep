@@ -29,6 +29,8 @@ public class NavigationLogic {
 	private ISensor sensor;
 	private double returnCost = 0;
 	private boolean isReturning = false;
+	
+	public boolean cleanedEntireFloor = false;
 
 	public ICell readCurrentCell(int floor) {
 		return currentPosition;
@@ -88,6 +90,8 @@ public class NavigationLogic {
 					return this.currentTravelingPath.remove(0);
 				} else {
 					// vacuum has already returned to the charging point.
+					cleanedEntireFloor = true;
+					
 					return null;
 				}
 			}
