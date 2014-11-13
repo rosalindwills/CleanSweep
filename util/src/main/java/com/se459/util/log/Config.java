@@ -6,7 +6,7 @@ public class Config {
 
 	public double chargeCapacity = 50;
 	public double dirtCapacity = 50;
-	public long delay = 75;
+	public long delay = 30;
 
 	public String floorPlanFilePath = "sensor" + File.separator + "src" + File.separator
 			+ "main" + File.separator + "resources" + File.separator

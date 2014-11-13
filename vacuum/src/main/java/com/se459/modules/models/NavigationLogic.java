@@ -143,8 +143,6 @@ public class NavigationLogic {
 				double returnCostFromNextDestination = PathFinder
 						.calculateCost(returnPathFromNext);
 
-				Log log = LogFactory.newFileLog("/Users/wenhaoliu/Desktop/1.txt");
-				log.append(returnCostFromNextDestination + " " + costToDestination + " " + remaining + " " + destinationCell.getVacuumCost() + " " + returnPathFromNext);
 				if (returnCostFromNextDestination + costToDestination < remaining
 						- destinationCell.getVacuumCost()) {
 					ICell cell = this.currentTravelingPath.remove(0);
