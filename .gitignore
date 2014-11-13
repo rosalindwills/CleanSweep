@@ -24,6 +24,7 @@ vacuum/src/main/log/log
 vacuum/src/main/log/log
 vacuum/src/main/log/log
 target/
-log/
+util/log/
+vacuum/log/
 *.swp
 
