@@ -134,9 +134,9 @@ public class NavigationLogic {
 				ICell destinationCell = this.currentTravelingPath
 						.get(this.currentTravelingPath.size() - 1);
 				
-				List<ICell> copy = this.currentTravelingPath;
+				List<ICell> copy = new ArrayList(this.currentTravelingPath);
 				copy.add(0, this.currentPosition);
-				double costToDestination = PathFinder.calculateCost(this.currentTravelingPath);
+				double costToDestination = PathFinder.calculateCost(copy);
 				
 				List<ICell> returnPathFromNext = pf.findPath(destinationCell,
 						baseStation);
