@@ -23,11 +23,12 @@ public class Vacuum implements Runnable {
 	private VacuumMemory memory;
 	private NavigationLogic navLogic;
 	private ISensor sensor;
+	
+	private Thread runningThread;
 
 	SweepLog log = new SweepLog(LogFactory.newFileLog());
 
-	static public Vacuum getInstance(ISensor sensor, int floor, int xPos,
-			int yPos) {
+	static public Vacuum getInstance(ISensor sensor, int floor) {
 		return new Vacuum(sensor, floor);
 	}
 
@@ -38,14 +39,30 @@ public class Vacuum implements Runnable {
 		this.currentFloor = floor;
 		memory = new VacuumMemory();
 		navLogic = new NavigationLogic(sensorSimulator, memory);
-		on = true;
 	
 		current = sensor.getStartPoint(this.currentFloor);
+	}
+	
+	public void start()
+	{
+		on = true;
+		
+		runningThread = new Thread(this);
+		runningThread.start();
 	}
 	
 	public void stop() {
 		on = false;
 		log.stop();
+		
+		try 
+		{
+			runningThread.join();
+		} 
+		catch (InterruptedException e) 
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public void FinishedCleaning(){
@@ -53,11 +70,11 @@ public class Vacuum implements Runnable {
 		
 		if(navLogic.cleanedEntireFloor)
 		{
-			this.observer.sendNotification("Finished cleaning the entire floor.");
+			sendNotification("Finished cleaning the entire floor.");
 		}
 		else
 		{
-			this.observer.sendNotification("Finished cleaning, did not have enough energy to clean the entire floor.");
+			sendNotification("Finished cleaning, did not have enough energy to clean the entire floor.");
 		}
 		log.done();
 	}
@@ -68,7 +85,7 @@ public class Vacuum implements Runnable {
 		navLogic.moveTo(current);
 		this.next = current;
 		log.recordStatus(this);
-		this.observer.update();
+		updateObserver();
 		sleep();
 		sweep(current);
 
@@ -79,13 +96,12 @@ public class Vacuum implements Runnable {
 				this.current = this.navLogic.readCurrentCell();		
 				log.recordStatus(this);
 				if (isInChargingPoint()) {
-					this.observer.update();
-					this.observer.sendNotification("Returned! Charging Left: "
-							+ this.chargeRemaining);
+					updateObserver();
+					sendNotification("Returned! Charging Left: " + this.chargeRemaining);
 					this.chargeRemaining = this.chargeCapacity;
 					this.navLogic.reset();
 					if (this.dirtUnits == this.dirtCapacity) {
-						this.observer.sendNotification("Empty me!");
+						sendNotification("Empty me!");
 						this.dirtUnits = 0;
 					}
 				}
@@ -102,12 +118,12 @@ public class Vacuum implements Runnable {
 				FinishedCleaning();
 				break;
 			}
-			this.observer.update();
+			updateObserver();
 			
 			sleep();
 		}
 
-		this.observer.sendNotification("Done");
+		sendNotification("Done");
 	}
 
 	private void sweep(ICell cell) {
@@ -119,7 +135,7 @@ public class Vacuum implements Runnable {
 					cell.cleanCell();
 					this.chargeRemaining -= cell.getVacuumCost();
 					this.dirtUnits += 1;
-					this.observer.update();
+					updateObserver();
 					log.engageVacuum(this);
 					sleep();
 				} else {
@@ -204,5 +220,21 @@ public class Vacuum implements Runnable {
 	
 	public ICell getNextCell(){
 		return this.next;
+	}
+	
+	private void updateObserver()
+	{
+		if(null != observer)
+		{
+			observer.update();
+		}
+	}
+	
+	private void sendNotification(String message)
+	{
+		if(null != observer)
+		{
+			observer.sendNotification(message);
+		}
 	}
 }
