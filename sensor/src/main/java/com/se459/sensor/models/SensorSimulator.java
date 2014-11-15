@@ -24,9 +24,16 @@ public class SensorSimulator implements ISensor {
 	static public ISensor getInstance() {
 		return new SensorSimulator();
 	}
+	
+	static public ISensor getInstance(IHomeLayout layout) {
+		return new SensorSimulator(layout);
+	}
 
 	private SensorSimulator() {
-
+	}
+	
+	private SensorSimulator(IHomeLayout layout) {
+		homeLayout = layout;
 	}
 
 	public IHomeLayout getHomeLayout() {
