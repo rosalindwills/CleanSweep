@@ -27,7 +27,7 @@ public class Vacuum implements Runnable {
 	
 	private Thread runningThread;
 
-	SweepLog log = new SweepLog(LogFactory.newFileLog("/home/thomas/se459/CleanSweep2/vacuum/log/Vacuum_log.txt"));
+	SweepLog log = new SweepLog(LogFactory.newFileLog());
 
 	static public Vacuum getInstance(ISensor sensor, int floor) {
 		return new Vacuum(sensor, floor);
