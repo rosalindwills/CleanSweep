@@ -1,10 +1,12 @@
 package com.se459.modules.sweep;
 
 import java.io.IOException;
+import java.io.*;
 
 import com.se459.sensor.models.SensorSimulator;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.modules.models.Vacuum;
+import java.util.Scanner;
 
 import org.xml.sax.SAXException;
 
@@ -24,17 +26,59 @@ public class StartVacuum {
 
         try {
             sim = SensorSimulator.getInstance();
-            sim.importXml(SensorSimulator.HOME_LAYOUT_FILE);
+            sim.importXml("classes" + File.separator + "homeLayout1.xml");
             vacuum = Vacuum.getInstance(sim,1);
+            Scanner in = new Scanner(System.in);
+            String line = null;
 
-            //add logic to determine if vacuum is currently running.
-            //if vacuum is not running, start it
-            new Thread(vacuum).start();
- 
-            Thread.sleep(20000);
- 
-            //if vacuum is running, stop it
-            vacuum.stop();
+
+            if (vacuum.isVacuumOn() == true){
+                System.out.println("Enter 'S' to stop vacuum or 'C' to exit");
+            }
+            else{
+                System.out.println("Enter 'R' to start vacuum or 'C' to exit");
+            }
+  
+            while((line = in.next()) != null){
+              if (line != null && line.length() > 0){
+                 char letter = line.toUpperCase().charAt(0);
+              
+                 if (letter == 'C'){
+                    System.exit(0);
+                 }
+                
+                 if (letter == 'R'){
+                    if (vacuum.isVacuumOn() == false){
+                       System.out.println("Starting vacuum...");
+                       vacuum.start();
+                    }
+                    else {
+                       System.out.println("Vacuum is currently running");
+                    }
+                 }
+
+                 if (letter == 'S'){
+                    if (vacuum.isVacuumOn() == true){
+                       System.out.println("Stopping vacuum...");
+                       vacuum.stop();
+                       Thread.sleep(5000);
+                    }
+                    else {
+                       System.out.println("Vacuum is currently not running");
+                    }
+                 }
+
+                 if (vacuum.isVacuumOn() == true){
+                    System.out.println("Enter 'S' to stop vacuum or 'C' to exit");
+                 }
+                 else{
+                    System.out.println("Enter 'R' to start vacuum or 'C' to exit");
+                 }
+  
+                 
+              }
+             
+            }
         
         } catch (SAXException e) {
         	throw new RuntimeException(e);

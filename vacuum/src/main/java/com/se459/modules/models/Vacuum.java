@@ -5,6 +5,7 @@ import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.util.log.Config;
 import com.se459.util.log.LogFactory;
+import java.io.*;
 
 public class Vacuum implements Runnable {
 
@@ -26,7 +27,7 @@ public class Vacuum implements Runnable {
 	
 	private Thread runningThread;
 
-	SweepLog log = new SweepLog(LogFactory.newFileLog());
+	SweepLog log = new SweepLog(LogFactory.newFileLog("/home/thomas/se459/CleanSweep2/vacuum/log/Vacuum_log.txt"));
 
 	static public Vacuum getInstance(ISensor sensor, int floor) {
 		return new Vacuum(sensor, floor);
@@ -57,13 +58,17 @@ public class Vacuum implements Runnable {
 		
 		try 
 		{
-			runningThread.join();
+		     runningThread.join();
 		} 
 		catch (InterruptedException e) 
 		{
 			e.printStackTrace();
 		}
 	}
+
+        public boolean isVacuumOn(){
+            return on;
+        }
 	
 	public void FinishedCleaning(){
 		on = false;
@@ -106,7 +111,7 @@ public class Vacuum implements Runnable {
 					}
 				}
 				
-				this.observer.update();
+			        updateObserver();
 				
 				sleep();
 				sweep(current);
