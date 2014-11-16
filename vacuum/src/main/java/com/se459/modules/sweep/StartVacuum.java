@@ -1,11 +1,13 @@
 package com.se459.modules.sweep;
 
-import java.io.IOException;
 import java.io.*;
 
 import com.se459.sensor.models.SensorSimulator;
 import com.se459.sensor.interfaces.ISensor;
+import com.se459.util.log.LogFactory;
+import com.se459.modules.models.SweepLog;
 import com.se459.modules.models.Vacuum;
+
 import java.util.Scanner;
 
 import org.xml.sax.SAXException;
@@ -21,13 +23,14 @@ public class StartVacuum {
 	}
 	
 	public static void main(String[] args){
-        ISensor sim;
+        ISensor sim = SensorSimulator.getInstance();
         Vacuum vacuum;
 
         try {
-            sim = SensorSimulator.getInstance();
-            sim.importXml("classes" + File.separator + "homeLayout1.xml");
-            vacuum = Vacuum.getInstance(sim,1);
+        	((SensorSimulator) sim).importXml("classes" + File.separator
+					+ "homeLayout1.xml");
+
+			vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newFileAndScreenLog()));
             Scanner in = new Scanner(System.in);
             String line = null;
 

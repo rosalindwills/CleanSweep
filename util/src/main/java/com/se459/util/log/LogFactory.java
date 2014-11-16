@@ -31,5 +31,13 @@ public class LogFactory {
 	public static Log newFileLog(String filePath){
 		return new FileLog(filePath);
 	}
+	
+	public static Log newFileAndScreenLog(){
+		return new FileAndScreenLog();
+	}
+
+	public static Log newFileAndScreenLog(String filePath){
+		return new FileAndScreenLog(filePath);
+	}
 
 }

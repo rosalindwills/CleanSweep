@@ -24,61 +24,56 @@ public class Vacuum implements Runnable {
 	private VacuumMemory memory;
 	private NavigationLogic navLogic;
 	private ISensor sensor;
-	
+
 	private Thread runningThread;
 
-	SweepLog log = new SweepLog(LogFactory.newFileLog());
+	SweepLog log;
 
-	static public Vacuum getInstance(ISensor sensor, int floor) {
-		return new Vacuum(sensor, floor);
+	static public Vacuum getInstance(ISensor sensor, int floor, SweepLog log) {
+		return new Vacuum(sensor, floor, log);
 	}
 
-	private Vacuum(ISensor sensorSimulator, int floor) {
+	private Vacuum(ISensor sensorSimulator, int floor, SweepLog log) {
+		this.log = log;
 		chargeRemaining = chargeCapacity;
 		dirtUnits = 0;
 		this.sensor = sensorSimulator;
 		this.currentFloor = floor;
 		memory = new VacuumMemory();
 		navLogic = new NavigationLogic(sensorSimulator, memory);
-	
+
 		current = sensor.getStartPoint(this.currentFloor);
+
 	}
-	
-	public void start()
-	{
+
+	public void start() {
 		on = true;
-		
+
 		runningThread = new Thread(this);
 		runningThread.start();
 	}
-	
+
 	public void stop() {
 		on = false;
 		log.stop();
-		
-		try 
-		{
-		     runningThread.join();
-		} 
-		catch (InterruptedException e) 
-		{
+
+		try {
+			runningThread.join();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
-        public boolean isVacuumOn(){
-            return on;
-        }
-	
-	public void FinishedCleaning(){
+	public boolean isVacuumOn() {
+		return on;
+	}
+
+	public void FinishedCleaning() {
 		on = false;
-		
-		if(navLogic.cleanedEntireFloor)
-		{
+
+		if (navLogic.cleanedEntireFloor) {
 			sendNotification("Finished cleaning the entire floor.");
-		}
-		else
-		{
+		} else {
 			sendNotification("Finished cleaning, did not have enough energy to clean the entire floor.");
 		}
 		log.done();
@@ -97,9 +92,10 @@ public class Vacuum implements Runnable {
 		while (on) {
 			if (!next.equals(current)) {
 				double batteryUnitDrain = this.navLogic.moveTo(this.next);
-				this.chargeRemaining -= batteryUnitDrain;	
-				this.current = this.navLogic.readCurrentCell();		
+				this.chargeRemaining -= batteryUnitDrain;
+				this.current = this.navLogic.readCurrentCell();
 				log.recordStatus(this);
+				
 				if (isInChargingPoint()) {
 					updateObserver();
 					sendNotification("Returned! Charging Left: " + this.chargeRemaining);
@@ -109,22 +105,26 @@ public class Vacuum implements Runnable {
 						sendNotification("Empty me!");
 						this.dirtUnits = 0;
 					}
+					if (this.navLogic.isBeingTurnedOff()) {				
+						this.on = false;
+						return;
+					}
 				}
-				
-			        updateObserver();
-				
+
+				updateObserver();
+
 				sleep();
 				sweep(current);
 			}
 			this.next = this.navLogic.checkAndGetNext(this.chargeRemaining);
-			
+
 			// when navlgoic returns a null, no next position to go, all done!
 			if (next == null) {
 				FinishedCleaning();
 				break;
 			}
 			updateObserver();
-			
+
 			sleep();
 		}
 
@@ -197,48 +197,44 @@ public class Vacuum implements Runnable {
 	public void registerObserver(Observer ob) {
 		this.observer = ob;
 	}
-	
+
 	public boolean isOn() {
 		return this.on;
 	}
-	
+
 	public boolean isReturning() {
 		return this.navLogic.getIsReturning();
 	}
-	
-	public SurfaceType getCurrentSurface(){
+
+	public SurfaceType getCurrentSurface() {
 		return this.current.getSurfaceType();
 	}
-	
-	public double getReturnCost(){
+
+	public double getReturnCost() {
 		return this.navLogic.getReturnCost();
 	}
-	
-	public boolean isInChargingPoint(){
-		return this.current.equals(this.sensor
-				.getStartPoint(this.currentFloor));
+
+	public boolean isInChargingPoint() {
+		return this.current
+				.equals(this.sensor.getStartPoint(this.currentFloor));
 	}
-	
-	public ICell getCurrentCell(){
+
+	public ICell getCurrentCell() {
 		return this.current;
 	}
-	
-	public ICell getNextCell(){
+
+	public ICell getNextCell() {
 		return this.next;
 	}
-	
-	private void updateObserver()
-	{
-		if(null != observer)
-		{
+
+	private void updateObserver() {
+		if (null != observer) {
 			observer.update();
 		}
 	}
-	
-	private void sendNotification(String message)
-	{
-		if(null != observer)
-		{
+
+	private void sendNotification(String message) {
+		if (null != observer) {
 			observer.sendNotification(message);
 		}
 	}

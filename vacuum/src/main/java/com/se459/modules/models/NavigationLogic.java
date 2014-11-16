@@ -29,6 +29,7 @@ public class NavigationLogic {
 	private ISensor sensor;
 	private double returnCost = 0;
 	private boolean isReturning = false;
+	private boolean beingTurnedOff = false;
 
 	public boolean cleanedEntireFloor = false;
 
@@ -272,6 +273,12 @@ public class NavigationLogic {
 		this.currentTravelingPath = this.returnPath;
 		this.isReturning = true;
 	}
+	
+	public void returnAndStop() {
+		this.currentTravelingPath = this.returnPath;
+		this.isReturning = true;
+		this.beingTurnedOff = true;
+	}
 
 	public boolean getIsReturning() {
 		return this.isReturning;
@@ -292,5 +299,9 @@ public class NavigationLogic {
 				this.currentPosition.getX(), this.currentPosition.getY()) == PathType.OPEN ? "T"
 				: "F");
 		return sb.toString();
+	}
+	
+	public boolean isBeingTurnedOff(){
+		return this.beingTurnedOff;
 	}
 }

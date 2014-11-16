@@ -9,6 +9,8 @@ import com.se459.sensor.enums.PathType;
 import com.se459.sensor.enums.SurfaceType;
 import com.se459.sensor.interfaces.ICell;
 import com.se459.sensor.interfaces.ISensor;
+import com.se459.util.log.LogFactory;
+import com.se459.modules.models.SweepLog;
 import com.se459.modules.models.Vacuum;
 
 import java.lang.reflect.Method;
@@ -43,7 +45,7 @@ public class VacuumTest {
 	@Test
 	public void testStartStop() 
 	{
-		vacuum = Vacuum.getInstance(sim, 1);
+		vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newScreenLog()));
 		
 		assertFalse(vacuum.isOn());
 		
@@ -60,7 +62,7 @@ public class VacuumTest {
 	public void testSweep()
 	{
 		Cell cell = new Cell(0, 0, SurfaceType.HIGHPILE, 1, PathType.OBSTACLE, PathType.OBSTACLE, PathType.OBSTACLE, PathType.OBSTACLE, false);
-		vacuum = Vacuum.getInstance(sim, 1);		
+		vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newScreenLog()));	
 
 		assertEquals(cell.getDirtUnits(), 1);
 		
@@ -85,7 +87,7 @@ public class VacuumTest {
 		Cell lowPile = new Cell(0, 0, SurfaceType.LOWPILE, 1, PathType.OBSTACLE, PathType.OBSTACLE, PathType.OBSTACLE, PathType.OBSTACLE, false);
 		Cell bareFloor = new Cell(0, 0, SurfaceType.BAREFLOOR, 1, PathType.OBSTACLE, PathType.OBSTACLE, PathType.OBSTACLE, PathType.OBSTACLE, false);		
 		
-		vacuum = Vacuum.getInstance(sim, 1);
+		vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newScreenLog()));
 		
 		double initialCharge = vacuum.getChargeRemaining();
 		
@@ -136,8 +138,8 @@ public class VacuumTest {
 	@Test
 	public void testPosition()
 	{
-		vacuum = Vacuum.getInstance(sim, 1);
+		vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newScreenLog()));
 		
-		vacuum = Vacuum.getInstance(sim, 1);
+		vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newScreenLog()));
 	}
 }

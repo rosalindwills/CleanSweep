@@ -1,17 +1,16 @@
 package com.se459.visualization;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -21,37 +20,38 @@ import org.xml.sax.SAXException;
 
 import com.se459.modules.models.MemoryLog;
 import com.se459.modules.models.Observer;
+import com.se459.modules.models.SweepLog;
 import com.se459.modules.models.Vacuum;
-import com.se459.sensor.enums.PathType;
-import com.se459.sensor.interfaces.ICell;
-import com.se459.sensor.interfaces.IFloor;
 import com.se459.sensor.interfaces.IHomeLayout;
 import com.se459.sensor.interfaces.ISensor;
 import com.se459.sensor.models.SensorSimulator;
-import com.se459.util.log.Config;
+import com.se459.util.log.LogFactory;
 
-public class HomeLayoutDrawer extends JFrame implements Observer {
+public class HomeLayoutDrawer extends JFrame implements Observer,
+		ActionListener {
 
 	ISensor sim = SensorSimulator.getInstance();
 	IHomeLayout layout;
 	Vacuum vacuum;
 
 	Thread drawingThread;
-	
+
 	static boolean windowOpen = true;
 	HomeLayoutPanel layoutPanel;
 	JPanel statusPanel;
 	static Thread thread;
 	static int maximumWindowlWidth = 600;
 	static int statusPanelHeight = 50;
+	static int buttonPanelHeight = 50;
 	static int maximumLayoutPanelHeight = 500;
 	static int maximumCellSize = 100;
 	static int minimumCellSize = 5;
+	static int padding = 50;
 
 	private static int actualLayoutPanelWidth;
 	private static int actualLayoutPanelHeight;
-
-	static int padding = 50;
+	
+	private JButton stopStartButton;
 
 	private MemoryLog memoryLog = new MemoryLog();
 
@@ -62,7 +62,7 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 					+ "homeLayout1.xml");
 
 			layout = ((SensorSimulator) sim).getHomeLayout();
-			vacuum = Vacuum.getInstance(sim, 1);
+			vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newFileAndScreenLog()));
 
 		} catch (SAXException | IOException e) {
 			throw new RuntimeException(e);
@@ -70,10 +70,11 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 
 		initUI();
 		vacuum.registerObserver(this);
-		vacuum.start();
+		
 	}
 
 	private void initUI() {
+		
 
 		setTitle("CleanSweep");
 
@@ -89,7 +90,7 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 		actualLayoutPanelWidth = actualCellSize * rows;
 		actualLayoutPanelHeight = actualCellSize * cols;
 		setSize(actualLayoutPanelWidth + padding, actualLayoutPanelHeight
-				+ statusPanelHeight + padding);
+				+ statusPanelHeight + buttonPanelHeight + padding);
 
 		FlowLayout uiLayout = new FlowLayout();
 		uiLayout.setHgap(0);
@@ -101,11 +102,19 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 		statusPanel.setPreferredSize(new Dimension(actualLayoutPanelWidth,
 				statusPanelHeight));
 
+		JPanel buttonPanel = new JPanel();
+		stopStartButton = new JButton("ON/OFF");
+		stopStartButton.addActionListener(this);
+		buttonPanel.add(stopStartButton);
+		buttonPanel.setPreferredSize(new Dimension(actualLayoutPanelWidth,
+				buttonPanelHeight));
+
 		layoutPanel = new HomeLayoutPanel(layout.getFloor(1), vacuum);
 		layoutPanel.setPreferredSize(new Dimension(actualLayoutPanelWidth,
 				actualLayoutPanelHeight));
 
 		add(statusPanel);
+		add(buttonPanel);
 		add(layoutPanel);
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -156,8 +165,7 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 
 		if (layoutPanel.vacuum.isOn()) {
 			statusPanel.removeAll();
-			String dirtStatusStr = "Dirt: "
-					+ layoutPanel.vacuum.getDirtUnits();
+			String dirtStatusStr = "Dirt: " + layoutPanel.vacuum.getDirtUnits();
 			String chargeStatusStr = "Charges: "
 					+ layoutPanel.vacuum.getChargeRemaining();
 			String apparatusStr = "Apparatus: "
@@ -171,8 +179,8 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 								.getReturnCost();
 			}
 
-			String dispaly = dirtStatusStr + "  " + chargeStatusStr + "  " + apparatusStr + "  "
-					+ returnPathCostStr;
+			String dispaly = dirtStatusStr + "  " + chargeStatusStr + "  "
+					+ apparatusStr + "  " + returnPathCostStr;
 
 			JLabel statusLabel = new JLabel(dispaly);
 			statusLabel.setFont(new Font("Arial", Font.BOLD, 13));
@@ -188,6 +196,26 @@ public class HomeLayoutDrawer extends JFrame implements Observer {
 	@Override
 	public void sendNotification(String message) {
 		JOptionPane.showMessageDialog(this, message);
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		if(!layoutPanel.vacuum.isOn()){
+			sim = SensorSimulator.getInstance();
+			try {
+				((SensorSimulator) sim).importXml("classes" + File.separator
+						+ "homeLayout1.xml");
+			} catch (SAXException | IOException e1) {
+				e1.printStackTrace();
+			}
+			layoutPanel.floor = ((SensorSimulator) sim).getHomeLayout().getFloor(1);
+			layoutPanel.vacuum = Vacuum.getInstance(sim, 1, new SweepLog(LogFactory.newFileAndScreenLog()));
+			layoutPanel.vacuum.registerObserver(this);
+
+			layoutPanel.vacuum.start();
+		}else{
+			layoutPanel.vacuum.getNavigationLogic().returnAndStop();
+		}
+		
 	}
 
 }
