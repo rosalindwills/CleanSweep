@@ -9,6 +9,14 @@ public class ScreenLog implements Log {
 	
 	private int lenOfHorizontalLine = 30;
 	
+	public int getLenOfHorizontalLine() {
+		return lenOfHorizontalLine;
+	}
+
+	public void setLenOfHorizontalLine(int lenOfHorizontalLine) {
+		this.lenOfHorizontalLine = lenOfHorizontalLine;
+	}
+
 	public void append(String logline) {
 		System.out.println(logline);
 	}
@@ -38,5 +46,7 @@ public class ScreenLog implements Log {
 	    	throw new RuntimeException(e);
 	    }
 	}
+	
+	
 
 }

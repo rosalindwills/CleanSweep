@@ -19,6 +19,15 @@ class FileLog implements Log {
 	BufferedWriter output;
 	
 	private int lenOfHorizontalLine = 30;
+	
+	public int getLenOfHorizontalLine() {
+		return lenOfHorizontalLine;
+	}
+
+	public void setLenOfHorizontalLine(int lenOfHorizontalLine) {
+		this.lenOfHorizontalLine = lenOfHorizontalLine;
+	}
+
 
 	/** Default constructor. Log file will be created at /log/log */
 	FileLog(){

@@ -24,6 +24,11 @@ public interface Log {
 	/**
 	 * Delete previous log
 	 */
+	
+	public int getLenOfHorizontalLine();
+
+	public void setLenOfHorizontalLine(int lenOfHorizontalLine);
+	
 	public void clear();
 	
 	
